@@ -1,0 +1,2 @@
+# sequencer
+Supercollider Sequencer
