@@ -220,21 +220,25 @@
 	});
 
 	noteDurationSlider.action_({
-		var control;
+		var control, control_name, pdef_name;
 		control = ControlSpec(0.1, 4, \linear, 0.1);
-		memory.at(\seq_mem).put(\sus, noteDurationSlider.value);
-		Pdefn(\p_sus, control.map(memory.at(\seq_mem).at(\sus)));
-		noteDurationBox.value_(control.map(memory.at(\seq_mem).at(\sus)));
+		control_name = ~build_control_name.value(memory, \sus);
+		pdef_name = \p_ ++ control_name;
+		memory.at(\seq_mem).put(control_name, noteDurationSlider.value);
+		Pdefn(pdef_name.asSymbol, control.map(memory.at(\seq_mem).at(control_name)));
+		noteDurationBox.value_(control.map(memory.at(\seq_mem).at(control_name)));
 	});
 
 	// Slider Control
 	volumeSlider.action_({
-		var control;
+		var control, control_name, pdef_name;
 		control = ControlSpec(0, 0.7, \linear, 0.01);
-		memory.at(\seq_mem).put(\amp, volumeSlider.value);
-		memory.at(\seq_mem).at(\amp).postln;
-		Pdefn(\p_amp, control.map(memory.at(\seq_mem).at(\amp)));
-		volumeNumberBox.value_(control.map(memory.at(\seq_mem).at(\amp)));
+		control_name = ~build_control_name.value(memory, \amp);
+		pdef_name = \p_ ++ control_name;
+		memory.at(\seq_mem).put(control_name, volumeSlider.value);
+		// memory.at(\seq_mem).at(control_name).postln;
+		Pdefn(pdef_name.asSymbol, control.map(memory.at(\seq_mem).at(control_name)));
+		volumeNumberBox.value_(control.map(memory.at(\seq_mem).at(control_name)));
 	});
 
 	compView.decorator.nextLine;
@@ -505,6 +509,13 @@
 		{ track[1][index].background_(Color.rand) }.defer;
 		{ track[1][index-1].background_(Color.white) }.defer;
 	});
+};
+
+~build_control_name = {
+	arg memory, name;
+	var str;
+	str = memory.at(\seq_mem).at(\current_name) ++ "_" ++ name;
+	str.asSymbol;
 };
 
 )

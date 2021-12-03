@@ -66,8 +66,8 @@ Pdefn(\melody, Ppar(
 			\octave, Pdefn(\p_mel_octave, memory.at(\seq_mem).at(\melody_octave)),
 			\degree, Pif(Pseq(stacked_buttons[0][1][r], inf).coin, currentOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
-			\sustain, Pdefn(\p_sus,  memory.at(\seq_mem).at(\sus)),
-			\amp, Pdefn(\p_amp, memory.at(\seq_mem).at(\amp)),
+			\sustain, Pdefn(\p_melody_sus,  memory.at(\seq_mem).at(\melody_sus)),
+			\amp, Pdefn(\p_melody_amp, memory.at(\seq_mem).at(\melody_amp)),
 			\out, Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out)),
 			\track_index, Pdefn(\p_track_index, Pseq((0..15), inf)),
 			\track_func, Pdefn(\p_track_func, Pfunc({|ev| ~update_track.value(ev.track_index, track)}));
@@ -83,8 +83,8 @@ Pdefn(\harmony, Ppar(
 			\octave, Pdefn(\p_harm_octave, memory.at(\seq_mem).at(\harmony_octave)),
 			\degree, Pif(Pseq(stacked_buttons[1][1][r], inf).coin, currentHarmonyOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
-			\sustain, Pdefn(\p_sus,  memory.at(\seq_mem).at(\sus)),
-			\amp, Pdefn(\p_amp, memory.at(\seq_mem).at(\amp)),
+			\sustain, Pdefn(\p_harmony_sus,  memory.at(\seq_mem).at(\harmony_sus)),
+			\amp, Pdefn(\p_harmony_amp, memory.at(\seq_mem).at(\harmony_amp)),
 			\out, Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out)),
 )}), inf)).play;
 
@@ -98,8 +98,8 @@ Pdefn(\bass, Ppar(
 			\octave, Pdefn(\p_bass_octave, memory.at(\seq_mem).at(\bass_octave)),
 			\degree, Pif(Pseq(stacked_buttons[2][1][r], inf).coin, currentBassOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
-			\sustain, Pdefn(\p_sus,  memory.at(\seq_mem).at(\sus)),
-			\amp, Pdefn(\p_amp, memory.at(\seq_mem).at(\amp)),
+			\sustain, Pdefn(\p_bass_sus,  memory.at(\seq_mem).at(\bass_sus)),
+			\amp, Pdefn(\p_bass_amp, memory.at(\seq_mem).at(\bass_amp)),
 			\out, Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out)),
 )}), inf)).play;
 
