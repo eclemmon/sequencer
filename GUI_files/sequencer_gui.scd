@@ -26,7 +26,9 @@ memory.atFail(\seq_mem, {
 		\melody_amp, 0.7,
 		\harmony_amp, 0.7,
 		\bass_amp, 0.7,
-		\pattern_out, 0]));
+		\pattern_out, 0,
+		\current_name, \melody
+	]));
 });
 
 memory.at(\seq_mem).put(\reverb, Synth(\reverb, [\input, 99, \output, 0, \mix, 0.5, \room, 0.5, \damp, 0.5]));
@@ -46,7 +48,7 @@ sequencer_tab_buttons = ~build_sequencer_tab_buttons.value(top_level, \stack, ta
 track_buttons_container = ~build_track_buttons_container.value(top_level, buttonsize*columns+40, (buttonsize) + (buttonsize*rows+20), ~style_1);
 track = ~build_sequencer_track.value(track_buttons_container, buttonsize*columns+20, buttonsize+20, ~style_1, columns, buttonsize);
 
-stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, sequencer_tab_buttons, buttonsize*columns+20, buttonsize*rows+20, 3, buttonsize, columns, rows, ~style_1);
+stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, sequencer_tab_buttons, buttonsize*columns+20, buttonsize*rows+20, 3, buttonsize, columns, rows, ~style_1, memory);
 
 // Built Control panel
 ctrl_panel_container = ~build_track_buttons_container.value(top_level, 225+190, buttonsize*rows+70, ~style_1);

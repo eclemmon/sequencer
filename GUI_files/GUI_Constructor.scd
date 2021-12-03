@@ -56,7 +56,7 @@
 };
 
 ~build_sequencer_tabbed_stack = {
-	arg top_level, sequencer_tab_buttons, width, height, num_tab_buttons, buttonsize, columns, rows, style;
+	arg top_level, sequencer_tab_buttons, width, height, num_tab_buttons, buttonsize, columns, rows, style, memory;
 	var view, stack, buttonsStacked, compViews;
 
 	view = View(top_level, Rect(0, 0, width, height));
@@ -78,6 +78,7 @@
 		item.action_({
 			arg button;
 			stack.index = i;
+			memory.at(\seq_mem).put(\current_name, button.string);
 			sequencer_tab_buttons.do({
 				arg item, i;
 				if (button != item, {
@@ -155,7 +156,7 @@
 
 ~build_sequencer_control_panel_1 = {
 	arg top, hwidth, hheight, style, instruments=[\default], butCompViews, memory;
-	var compView, speedSliderLabel, volumeSliderLabel, speedSlider, volumeSlider, speedNumberBox, volumeNumberBox, scaleMenuLabel, scaleMenu, instrumentLabel, instrumentMenu, clearButton, durationSliderLabel, noteDurationSlider, noteDurationBox, tab_names;
+	var compView, speedSliderLabel, volumeSliderLabel, speedSlider, volumeSlider, speedNumberBox, volumeNumberBox, scaleMenuLabel, scaleMenu, instrumentLabel, instrumentMenu, clearButton, durationSliderLabel, noteDurationSlider, noteDurationBox;
 	// Slider Composite View
 	compView = CompositeView(top, Rect(0, 0, hwidth, hheight));
 	compView.background = style.at("bank_frame_color");
@@ -505,6 +506,7 @@
 		{ track[1][index-1].background_(Color.white) }.defer;
 	});
 };
+
 )
 
 
