@@ -283,7 +283,7 @@
 		var control_name, pdef_name;
 		control_name = ~build_control_name.value(memory, \instrument);
 		pdef_name = \p_ ++ control_name;
-		memory.at(\seq_mem).put(\control_name, menu.item);
+		memory.at(\seq_mem).put(control_name, menu.item);
 		Pdefn(pdef_name.asSymbol, menu.item);
 	});
 
@@ -298,8 +298,9 @@
 			arg butCompView;
 			butCompView[0].postln;
 			butCompView[0].children(Button).do({
-			arg item, i;
-			if(item.value == 1, {item.valueAction = 0;})});
+				arg item, i;
+				if(item.value == 1, {item.valueAction = 0;})
+			});
 		});
 	});
 
@@ -307,7 +308,7 @@
 };
 
 ~build_sequencer_control_panel_2 = {
-	arg top, hwidth, hheight, style, buttonsize, memory, array, reverb;
+	arg top, hwidth, hheight, style, buttonsize, memory, stacked_buttons, reverb, track;
 	var control2CompView, octaveLabel, minusOctBut, plusOctBut, quantLabel, quantSlider, quantNumberBox, mixKnob, roomKnob, dampKnob, reverbButton, outDevices, inDevices, inDevicesSelector, outDevicesSelector, outDevice, inDevice, inDevicesSelectorText, outDevicesSelectorText;
 
 	outDevices = ["Default"] ++ ServerOptions.outDevices;
@@ -341,39 +342,19 @@
 
 	// Octave Button Actions
 	minusOctBut.action_({
-		memory.at(\seq_mem).put(\currentOctave, memory.at(\seq_mem).at(\currentOctave) - 7);
-
-		Pdefn(\pattern, Ppar(array.collect({
-			arg c, r;
-			var currentOctaveDegree = array.size - r - 1 + memory.at(\seq_mem).at(\currentOctave);
-			Pbind(
-				\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
-				\scale, Pdefn(\p_scale, Scale.at(memory.at(\seq_mem).at(\scale))),
-				\degree, Pif(Pseq(array[r], inf).coin, currentOctaveDegree, \rest),
-				\dur, Pdefn(\p_dur, memory.at(\seq_mem).at(\dur)),
-				\amp, Pdefn(\p_amp, memory.at(\seq_mem).at(\amp)),
-				\out, Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out)),
-							\track_index, Pdefn(\p_track_index, Pseq((0..15), inf)),
-			\track_func, Pdefn(\p_track_func, Pfunc({|ev| ~update_track.value(ev.track_index)}));
-		)}), inf));
+		var cn_octave, pdef_name;
+		cn_octave = ~build_control_name.value(memory, \octave);
+		pdef_name = \p_ ++ cn_octave;
+		memory.at(\seq_mem).put(cn_octave, memory.at(\seq_mem).at(cn_octave) - 1);
+		Pdefn(pdef_name.asSymbol, memory.at(\seq_mem).at(cn_octave.asSymbol))
 	});
 
 	plusOctBut.action_({
-		memory.at(\seq_mem).put(\currentOctave, memory.at(\seq_mem).at(\currentOctave) + 7);
-
-		Pdefn(\pattern, Ppar(array.collect({
-			arg c, r;
-			var currentOctaveDegree = array.size - r - 1 + memory.at(\seq_mem).at(\currentOctave);
-			Pbind(
-				\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
-				\scale, Pdefn(\p_scale, Scale.at(memory.at(\seq_mem).at(\scale))),
-				\degree, Pif(Pseq(array[r], inf).coin, currentOctaveDegree, \rest),
-				\dur, Pdefn(\p_dur, memory.at(\seq_mem).at(\dur)),
-				\amp, Pdefn(\p_amp, memory.at(\seq_mem).at(\amp)),
-				\out, Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out)),
-				\track_index, Pdefn(\p_track_index, Pseq((0..15), inf)),
-				\track_func, Pdefn(\p_track_func, Pfunc({|ev| ~update_track.value(ev.track_index)}));
-		)}), inf))
+		var cn_octave, pdef_name;
+		cn_octave = ~build_control_name.value(memory, \octave);
+		pdef_name = \p_ ++ cn_octave;
+		memory.at(\seq_mem).put(cn_octave, memory.at(\seq_mem).at(cn_octave) + 1);
+		Pdefn(pdef_name.asSymbol, memory.at(\seq_mem).at(cn_octave.asSymbol))
 	});
 
 	control2CompView.decorator.nextLine;

@@ -53,7 +53,7 @@ stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, s
 // Built Control panel
 ctrl_panel_container = ~build_track_buttons_container.value(top_level, 225+190, buttonsize*rows+70, ~style_1);
 sequencer_ctrl_1 = ~build_sequencer_control_panel_1.value(ctrl_panel_container, 225, buttonsize*rows+70, ~style_1, instruments, stacked_buttons, memory);
-sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 190, buttonsize*rows+70, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb));
+sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 190, buttonsize*rows+70, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb), track);
 
 
 Pdefn(\melody, Ppar(
@@ -63,7 +63,7 @@ Pdefn(\melody, Ppar(
 		Pbind(
 			\instrument, Pdefn(\p_melody_instrument, memory.at(\seq_mem).at(\melody_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
-			\octave, Pdefn(\p_mel_octave, memory.at(\seq_mem).at(\melody_octave)),
+			\octave, Pdefn(\p_melody_octave, memory.at(\seq_mem).at(\melody_octave)),
 			\degree, Pif(Pseq(stacked_buttons[0][1][r], inf).coin, currentOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
 			\sustain, Pdefn(\p_melody_sus,  memory.at(\seq_mem).at(\melody_sus)),
@@ -80,7 +80,7 @@ Pdefn(\harmony, Ppar(
 		Pbind(
 			\instrument, Pdefn(\p_harmony_instrument, memory.at(\seq_mem).at(\harmony_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
-			\octave, Pdefn(\p_harm_octave, memory.at(\seq_mem).at(\harmony_octave)),
+			\octave, Pdefn(\p_harmony_octave, memory.at(\seq_mem).at(\harmony_octave)),
 			\degree, Pif(Pseq(stacked_buttons[1][1][r], inf).coin, currentHarmonyOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
 			\sustain, Pdefn(\p_harmony_sus,  memory.at(\seq_mem).at(\harmony_sus)),
