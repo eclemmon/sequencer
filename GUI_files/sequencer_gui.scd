@@ -1,19 +1,31 @@
 // Sequencer
 (
-var buttonsize=50, columns=16, rows=8, window, top_level, track_buttons_container, ctrl_panel_container, header, buttons, track, sequencer_tab_buttons, stacked_buttons, sequencer_ctrl_1, sequencer_ctrl_2, start_instrument=\default, pattern, instruments, memory=~gm;
+var buttonsize=50, columns=16, rows=8, window, top_level, track_buttons_container, ctrl_panel_container, header, buttons, track, sequencer_tab_buttons, stacked_buttons, sequencer_ctrl_1, sequencer_ctrl_2, start_instrument=\default, pattern, instruments, memory=~gm, tab_names=['melody', 'harmony', 'bass'];
 
 // Initialize Memory
 memory.atFail(\seq_mem, {
 	memory.put(\seq_mem, Dictionary.newFrom([
 		\currentOctave, 0,
-		\melodyOctave, 7,
-		\harmonyOctave, 4,
-		\bassOctave, 2,
+		\melody_octave, 7,
+		\harmony_octave, 4,
+		\bass_octave, 2,
 		\scale, Scale.major,
+		\melody_scale, Scale.major,
+		\harmony_scale, Scale.major,
+		\bass_scale, Scale.major,
 		\instrument, start_instrument,
+		\melody_instrument, start_instrument,
+		\harmony_instrument, start_instrument,
+		\bass_instrument, start_instrument,
 		\delta, 0.1,
 		\sus, 0.1,
+		\melody_sus, 0.1,
+		\harmony_sus, 0.1,
+		\bass_sus, 0.1,
 		\amp, 0.7,
+		\melody_amp, 0.7,
+		\harmony_amp, 0.7,
+		\bass_amp, 0.7,
 		\pattern_out, 0]));
 });
 
@@ -28,7 +40,7 @@ top_level = ~build_top_level.value(window, buttonsize*columns+520, buttonsize*ro
 header = ~build_sequencer_header.value(top_level, buttonsize*columns+500, 80, ~style_1, "Sequencer");
 
 // Build Tabs
-sequencer_tab_buttons = ~build_sequencer_tab_buttons.value(top_level, \stack, ['melody', 'harmony', 'bass']);
+sequencer_tab_buttons = ~build_sequencer_tab_buttons.value(top_level, \stack, tab_names);
 
 // Build Track
 track_buttons_container = ~build_track_buttons_container.value(top_level, buttonsize*columns+40, (buttonsize) + (buttonsize*rows+20), ~style_1);
@@ -45,11 +57,11 @@ sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 
 Pdefn(\melody, Ppar(
 	stacked_buttons[0][1].collect({
 		arg c, r;
-		var currentOctaveDegree = stacked_buttons[0][1].size - r - 1 + memory.at(\seq_mem).at(\currentOctave);
+		var currentOctaveDegree = stacked_buttons[0][1].size - r - 1 + memory.at(\seq_mem).at(\melody_octave);
 		Pbind(
 			\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
-			\octave, Pdefn(\p_mel_octave, memory.at(\seq_mem).at(\melodyOctave)),
+			\octave, Pdefn(\p_mel_octave, memory.at(\seq_mem).at(\melody_octave)),
 			\degree, Pif(Pseq(stacked_buttons[0][1][r], inf).coin, currentOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
 			\sustain, Pdefn(\p_sus,  memory.at(\seq_mem).at(\sus)),
@@ -62,11 +74,11 @@ Pdefn(\melody, Ppar(
 Pdefn(\harmony, Ppar(
 	stacked_buttons[1][1].collect({
 		arg c, r;
-		var currentHarmonyOctaveDegree = stacked_buttons[1][1].size - r - 1 + memory.at(\seq_mem).at(\harmonyOctave);
+		var currentHarmonyOctaveDegree = stacked_buttons[1][1].size - r - 1 + memory.at(\seq_mem).at(\harmony_octave);
 		Pbind(
 			\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
-			\octave, Pdefn(\p_harm_octave, memory.at(\seq_mem).at(\harmonyOctave)),
+			\octave, Pdefn(\p_harm_octave, memory.at(\seq_mem).at(\harmony_octave)),
 			\degree, Pif(Pseq(stacked_buttons[1][1][r], inf).coin, currentHarmonyOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
 			\sustain, Pdefn(\p_sus,  memory.at(\seq_mem).at(\sus)),
@@ -77,11 +89,11 @@ Pdefn(\harmony, Ppar(
 Pdefn(\bass, Ppar(
 	stacked_buttons[2][1].collect({
 		arg c, r;
-		var currentBassOctaveDegree = stacked_buttons[2][1].size - r - 1 + memory.at(\seq_mem).at(\bassOctave);
+		var currentBassOctaveDegree = stacked_buttons[2][1].size - r - 1 + memory.at(\seq_mem).at(\bass_octave);
 		Pbind(
 			\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
-			\octave, Pdefn(\p_bass_octave, memory.at(\seq_mem).at(\bassOctave)),
+			\octave, Pdefn(\p_bass_octave, memory.at(\seq_mem).at(\bass_octave)),
 			\degree, Pif(Pseq(stacked_buttons[2][1][r], inf).coin, currentBassOctaveDegree, \rest),
 			\delta, Pdefn(\p_delta, memory.at(\seq_mem).at(\delta)),
 			\sustain, Pdefn(\p_sus,  memory.at(\seq_mem).at(\sus)),

@@ -155,7 +155,7 @@
 
 ~build_sequencer_control_panel_1 = {
 	arg top, hwidth, hheight, style, instruments=[\default], butCompViews, memory;
-	var compView, speedSliderLabel, volumeSliderLabel, speedSlider, volumeSlider, speedNumberBox, volumeNumberBox, scaleMenuLabel, scaleMenu, instrumentLabel, instrumentMenu, clearButton, durationSliderLabel, noteDurationSlider, noteDurationBox;
+	var compView, speedSliderLabel, volumeSliderLabel, speedSlider, volumeSlider, speedNumberBox, volumeNumberBox, scaleMenuLabel, scaleMenu, instrumentLabel, instrumentMenu, clearButton, durationSliderLabel, noteDurationSlider, noteDurationBox, tab_names;
 	// Slider Composite View
 	compView = CompositeView(top, Rect(0, 0, hwidth, hheight));
 	compView.background = style.at("bank_frame_color");
