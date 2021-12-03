@@ -280,9 +280,11 @@
 	instrumentMenu.value_(0);
 	instrumentMenu.action_({
 		arg menu;
-		// [menu.item, menu.value].postln;
-		memory.at(\seq_mem).put(\instrument, menu.item);
-		Pdefn(\p_instrument, menu.item);
+		var control_name, pdef_name;
+		control_name = ~build_control_name.value(memory, \instrument);
+		pdef_name = \p_ ++ control_name;
+		memory.at(\seq_mem).put(\control_name, menu.item);
+		Pdefn(pdef_name.asSymbol, menu.item);
 	});
 
 	compView.decorator.nextLine;

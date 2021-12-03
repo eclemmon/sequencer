@@ -61,7 +61,7 @@ Pdefn(\melody, Ppar(
 		arg c, r;
 		var currentOctaveDegree = stacked_buttons[0][1].size - r - 1 + memory.at(\seq_mem).at(\melody_octave);
 		Pbind(
-			\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
+			\instrument, Pdefn(\p_melody_instrument, memory.at(\seq_mem).at(\melody_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
 			\octave, Pdefn(\p_mel_octave, memory.at(\seq_mem).at(\melody_octave)),
 			\degree, Pif(Pseq(stacked_buttons[0][1][r], inf).coin, currentOctaveDegree, \rest),
@@ -78,7 +78,7 @@ Pdefn(\harmony, Ppar(
 		arg c, r;
 		var currentHarmonyOctaveDegree = stacked_buttons[1][1].size - r - 1 + memory.at(\seq_mem).at(\harmony_octave);
 		Pbind(
-			\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
+			\instrument, Pdefn(\p_harmony_instrument, memory.at(\seq_mem).at(\harmony_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
 			\octave, Pdefn(\p_harm_octave, memory.at(\seq_mem).at(\harmony_octave)),
 			\degree, Pif(Pseq(stacked_buttons[1][1][r], inf).coin, currentHarmonyOctaveDegree, \rest),
@@ -93,7 +93,7 @@ Pdefn(\bass, Ppar(
 		arg c, r;
 		var currentBassOctaveDegree = stacked_buttons[2][1].size - r - 1 + memory.at(\seq_mem).at(\bass_octave);
 		Pbind(
-			\instrument, Pdefn(\p_instrument, memory.at(\seq_mem).at(\instrument)),
+			\instrument, Pdefn(\p_bass_instrument, memory.at(\seq_mem).at(\bass_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\scale)),
 			\octave, Pdefn(\p_bass_octave, memory.at(\seq_mem).at(\bass_octave)),
 			\degree, Pif(Pseq(stacked_buttons[2][1][r], inf).coin, currentBassOctaveDegree, \rest),
