@@ -1,49 +1,32 @@
 // SynthDefs
 (
 
-SynthDef.new(\recordBuf, {
-	arg input=0, buffer, loop=1, run, trigger;
+SynthDef.new(\recordBufSequencer, {
+	arg input=0, buffer, loop=1, run, trigger, recLevel=1.0, preLevel = 0.0;
 	var record;
 	record = RecordBuf.ar(SoundIn.ar(input),
 		buffer,
+		recLevel: recLevel,
+		preLevel: preLevel,
 		loop: loop,
 		run: run,
 		trigger: trigger);
 }).add;
 
-SynthDef.new(\playBuf, {
-	arg buffer, rate=1, trigger=1, startPos=0, loop=0, doneAction=2, output=0, amp=127, mono_stereo=1, lag_time=0;
-	var playbuf, env, amplitude;
-	amplitude = amp.linlin(0, 127, 0, 1);
-	env = EnvGen.kr(Env([0,1,1,0], times: [0.1, BufDur.kr(buffer)-0.2, 0.1], curve: 'wel'));
-	if (mono_stereo == 1, {
-		playbuf = PlayBuf.ar(1, buffer, rate, trigger, startPos, loop, doneAction);
-	}, {
-		playbuf = PlayBuf.ar(1, buffer, rate, trigger, startPos, loop, doneAction)!2;
-	});
-	Out.ar(output, (playbuf * env * amplitude.lag(lag_time)));
+SynthDef.new(\granulatorSplitter, {
+	arg in=10, out1=89, out2=99;
+	var input;
+	input = In.ar(in, 2);
+	Out.ar([out1, out2], input);
 }).add;
 
-SynthDef.new(\playBuf_2ch, {
-	arg buffer, rate=1, gate=1, startPos=0, loop=0, doneAction=2, output=0, amp=127, lag_time=0;
-	var playbuf, env, amplitude;
-	amplitude = amp.linlin(0, 127, 0, 1);
-	env = EnvGen.kr(Env([0,1,1,0], times: [0.1, BufDur.kr(buffer)-0.2, 0.1], curve: 'wel', releaseNode: 1), gate: gate);
-	playbuf = PlayBuf.ar(2, buffer, rate, gate, startPos, loop, doneAction);
-	Out.ar(output, playbuf * env * amplitude.lag(lag_time));
-}).add;
-
-SynthDef.new(\grainBuf, {
-	arg buffer, rate=63, grainTriggerRate=8192, grainDur=63, pan=0, pbdur=10, output=0, gate=0, amp=127;
-	var env, grain, trigger, pos, amplitude;
-	amplitude = amp.linlin(0, 127, 0, 1);
-	pos = LFNoise2.kr(20).range(0, 1);
-	env = EnvGen.kr(Env([0,1,1,0], times: [0.1, pbdur-0.2, 0.1], curve: 'wel'), gate: gate, doneAction: 2);
-	// env = EnvGen.kr(Env.adsr, gate: gate, doneAction:2);
-	// trigger = Dust.kr(grainTriggerRate.linlin(0, 127, 0.1, 8));
-	trigger = Impulse.kr(grainTriggerRate.linlin(0, 16384, 0.1, 10));
-	grain = GrainBuf.ar(1, sndbuf: buffer, trigger: trigger, dur: grainDur.linlin(0, 127, 0.1, BufDur.kr(buffer)), rate: rate.linlin(0, 127, -2, 4), pos: pos, pan: pan)!2;
-	Out.ar(output, grain*env*amplitude);
+SynthDef(\granulatorSequencer, {
+	arg out, triggerRate=10, dur=0.1, sndbuf, rate=1, posChangeRate=5, interp=2, pan=0, amp, add;
+	var gran, trigger, pos;
+	trigger = Dust.kr(triggerRate);
+	pos = Dust.kr(posChangeRate);
+	gran = GrainBuf.ar(2, trigger, dur, sndbuf, pos, interp, 2, pan, mul: amp);
+	Out.ar(out, gran);
 }).add;
 
 SynthDef.new(\hpf, {

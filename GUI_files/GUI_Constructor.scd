@@ -244,7 +244,7 @@
 	compView.decorator.nextLine;
 
 	// Scale Selection label
-	scaleMenuLabel = StaticText(compView, Rect(0, 10, 130, 30))
+	scaleMenuLabel = StaticText(compView, Rect(0, 10, hwidth-25, 30))
 	.string_("Scale Type")
 	.font_(style.at("text_font"))
 	.align_(\center);
@@ -254,7 +254,7 @@
 	compView.decorator.nextLine;
 
 	// Scale Selection Menu
-	scaleMenu = PopUpMenu(compView, Rect(0, 10, 130, 30));
+	scaleMenu = PopUpMenu(compView, Rect(0, 10, hwidth-25, 30));
 	scaleMenu.items = Scale.names;
 	scaleMenu.value_(Scale.names.indexOf(\major));
 	scaleMenu.action_({
@@ -265,7 +265,7 @@
 	compView.decorator.nextLine;
 
 	// Instrument Selection Label
-	instrumentLabel = StaticText(compView, Rect(0, 10, 130, 30))
+	instrumentLabel = StaticText(compView, Rect(0, 10, hwidth-25, 30))
 	.string_("Instrument")
 	.font_(style.at("text_font"))
 	.align_(\center);
@@ -275,7 +275,7 @@
 	compView.decorator.nextLine;
 
 	// Instrument Selection Label
-	instrumentMenu = PopUpMenu(compView, Rect(0, 10, 130, 30));
+	instrumentMenu = PopUpMenu(compView, Rect(0, 10, hwidth-25, 30));
 	instrumentMenu.items = instruments;
 	instrumentMenu.value_(0);
 	instrumentMenu.action_({
@@ -290,7 +290,7 @@
 	compView.decorator.nextLine;
 
 	// Clear Sequencer Button
-	clearButton = Button(compView, Rect(0, 10, 130, 30));
+	clearButton = Button(compView, Rect(0, 10, hwidth-25, 30));
 	clearButton.string = "clear sequencer";
 
 	clearButton.action_({
@@ -393,9 +393,11 @@
 	.action_({
 		if (reverbButton.value == 1, {
 			memory.at(\seq_mem).put(\pattern_out, 99);
+			memory.at(\seq_mem).put(\reverb_on, true)
 
 		}, {
 			memory.at(\seq_mem).put(\pattern_out, 0);
+			memory.at(\seq_mem).put(\reverb_on, false)
 		});
 		Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out));
 	});
@@ -459,6 +461,99 @@
 		deviceName.item.postln;
 		Server.default.options.outDevice = deviceName.item;
 	});
+};
+
+~build_sequencer_control_panel_3 = {
+	arg top, hwidth, hheight, style, memory, stacked_buttons, granulator;
+	var control3CompView, granulatorLabel, granulatorOnButton, trigRateKnob, grainLengthKnob, playBackRateKnob;
+
+	// Control Comp View 3
+	control3CompView = CompositeView(top, Rect(0, 0, hwidth, hheight));
+	control3CompView.background = style.at("bank_frame_color");
+	control3CompView.addFlowLayout(10@10);
+	control3CompView.decorator.gap_(10@10);
+
+	// Granulator Label
+	granulatorLabel = StaticText(control3CompView, Rect(0, 0, hwidth-20, 30))
+	.string_("Granulator")
+	.font_(style.at("text_font"))
+	.align_(\center);
+	granulatorLabel.background = style.at("window_color");
+	granulatorLabel.stringColor = Color.white;
+
+	// Granulatory Button On/Off
+	granulatorOnButton = Button(control3CompView, Rect(0, 0, hwidth-20, 30))
+	.states_([["Turn Granulator On", Color.white, style.at("text_color")], ["Turn Granulator Off", Color.white, Color.red]])
+	.action_({
+		if (granulatorOnButton.value == 1, {
+			// If granulator is turned on, send pattern out to splitter
+			memory.at(\seq_mem).put(\pattern_out, 10);
+
+			if (memory.at(\seq_mem).at(\reverb_on), {
+				// If reverb is on send granulator to reverb
+				memory.at(\seq_mem).put(\granulator_out, 99);
+			}, {
+				// else send granulator to main out
+				memory.at(\seq_mem).put(\granulator_out, 0);
+			});
+			// Set granulator on to true
+			memory.at(\seq_mem).put(\granulator_on, true);
+		}, {
+			// If granulator is turned off
+			if (memory.at(\seq_mem).at(\reverb_on), {
+				// If reverb is on send pattern to reverb
+				memory.at(\seq_mem).put(\pattern_out, 99);
+			}, {
+				// if reverb is off, send pattern to main out.
+				memory.at(\seq_mem).put(\pattern_out, 0);
+			});
+			// Set granulatory on to false
+			memory.at(\seq_mem).put(\granulator_on, false);
+		});
+		Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out));
+	});
+
+	control3CompView.decorator.nextLine;
+
+	["Trig Rate", "Grain Len", "Grain PBR"].do({
+		arg item, i;
+		var label;
+		label = StaticText(control3CompView, Rect(0, 0, hwidth-40/3, 30))
+		.string_(item)
+		.font_(style.at("text_font"))
+		.align_(\center);
+		label.background = style.at("bank_frame_color");
+	});
+
+	control3CompView.decorator.nextLine;
+
+	// Trigger Rate
+	trigRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	trigRateKnob.mode =\vert;
+	trigRateKnob.value = 0.5;
+	trigRateKnob.action_({
+		// reverb.set(\mix, trigRateKnob.value);
+	});
+
+	// Grain Length
+	grainLengthKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainLengthKnob.mode =\vert;
+	grainLengthKnob.value = 0.5;
+	grainLengthKnob.action_({
+		// reverb.set(\mix, trigRateKnob.value);
+	});
+
+	// Playback Rate
+	playBackRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	playBackRateKnob.mode =\vert;
+	playBackRateKnob.value = 0.5;
+	playBackRateKnob.action_({
+		// reverb.set(\mix, trigRateKnob.value);
+	});
+
+	// rate of change in Play back position for the gran to start
+
+	// Pan Controls
 };
 
 ~volume_midi_control = {
