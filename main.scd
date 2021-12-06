@@ -14,7 +14,7 @@ path.postln;
 Server.default.options.inDevice_("MacBook Pro Microphone");*/
 // Server.default.options.inDevice_("Scarlett 2i2 USB");
 // Server.default.options.outDevice_("Scarlett 2i2 USB");
-// Server.default.options.outDevice_("SuperCollider Out");
+Server.default.options.outDevice_("Screen Recording");
 ~server = Server.default;
 ~server.options.numOutputBusChannels_(2);
 ~server.options.numInputBusChannels_(4);
