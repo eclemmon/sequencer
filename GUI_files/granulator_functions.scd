@@ -19,7 +19,7 @@
 			\rateRand, memory.at(\seq_mem).at(\granRateRand),
 			\pan, memory.at(\seq_mem).at(\granPan),
 			\panRand, memory.at(\seq_mem).at(\granPanRand),
-			\grainEnv, memory.at(\seq_mem).at(\granEnv),
+			\grainEnv, memory.at(\seq_mem).at(\granGrainEnv),
 			\ptrBus, memory.at(\seq_mem).at(\ptrBus),
 			\ptrSampleDelay, memory.at(\seq_mem).at(\granPtrSampleDelay),
 			\ptrRandSamples, memory.at(\seq_mem).at(\granPtrRandSamples),
@@ -90,8 +90,8 @@
 
 ~set_granulator_rate_randomization = {
 	arg memory, val;
-	memory.at(\seq_mem).put(\granSync, val);
-	memory.at(\seq_mem).at(\granulatorSequencer).set(\out, memory.at(\seq_mem).at(\granSync));
+	memory.at(\seq_mem).put(\granRateRand, val);
+	memory.at(\seq_mem).at(\granulatorSequencer).set(\rateRand, memory.at(\seq_mem).at(\granRateRand));
 };
 
 ~set_granulator_pan = {

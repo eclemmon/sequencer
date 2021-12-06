@@ -59,7 +59,7 @@ memory.at(\seq_mem).put(\recGroup, Group.after(memory.at(\seq_mem).at(\ptrGroup)
 memory.at(\seq_mem).put(\granGroup, Group.after(memory.at(\seq_mem).at(\recGroup)));
 
 // Initialize reverb
-memory.at(\seq_mem).put(\reverb, Synth(\reverb, [\input, 99, \output, 0, \mix, 0.5, \room, 0.5, \damp, 0.5]));
+memory.at(\seq_mem).put(\reverb, Synth(\reverb, [\input, 99, \output, 0, \mix, 0.5, \room, 0.5, \damp, 0.5], memory.at(\seq_mem).at(\granGroup)));
 
 // Initialize pattern splitter
 memory.at(\seq_mem).put(\granulatorSplitter, Synth(\granulatorSplitter, [\out1, 89, \out2, 0, \in, 79]));
@@ -97,7 +97,7 @@ stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, s
 ctrl_panel_container = ~build_track_buttons_container.value(top_level, 225+190+200, buttonsize*rows+170, ~style_1);
 sequencer_ctrl_1 = ~build_sequencer_control_panel_1.value(ctrl_panel_container, 225, buttonsize*rows+170, ~style_1, instruments, stacked_buttons, memory);
 sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 190, buttonsize*rows+170, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb), track);
-sequencer_ctrl_3 = ~build_sequencer_control_panel_3.value(ctrl_panel_container, 200, buttonsize*rows+170, ~style_1, memory, memory.at(\seq_mem).at(\granulatorSequencer));
+sequencer_ctrl_3 = ~build_sequencer_control_panel_3.value(ctrl_panel_container, 200, buttonsize*rows+170, columns, ~style_1, memory, memory.at(\seq_mem).at(\granulatorSequencer));
 
 Pdefn(\melody, Ppar(
 	stacked_buttons[0][1].collect({

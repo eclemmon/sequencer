@@ -391,14 +391,17 @@
 	.states_([["Turn Reverb On", Color.white, style.at("text_color")], ["Turn Reverb Off", Color.white, Color.red]])
 	.action_({
 		if (reverbButton.value == 1, {
-			memory.at(\seq_mem).put(\pattern_out, 99);
-			memory.at(\seq_mem).put(\reverb_on, true)
+			// Set Granulator Splitter out2 to 99
+			// Set granulator out to reverb
+			memory.at(\seq_mem).put(\reverb_on, true);
+			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 99);
+			memory.at(\seq_mem).at(\granulatorSequencer).set(\out, 99);
 
 		}, {
-			memory.at(\seq_mem).put(\pattern_out, 0);
-			memory.at(\seq_mem).put(\reverb_on, false)
+			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 0);
+			memory.at(\seq_mem).at(\granulatorSequencer).set(\out, 0);
+			memory.at(\seq_mem).put(\reverb_on, false);
 		});
-		Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out));
 	});
 
 	// REVERB LABELS
@@ -463,14 +466,14 @@
 };
 
 ~build_sequencer_control_panel_3 = {
-	arg top, hwidth, hheight, style, memory, granulator;
-	var control3CompView, granulatorLabel, granulatorOnButton, ampKnob, grainDensityKnob, playBackRateKnob, posChangeRateKnob, panChangeRateKnob;
+	arg top, hwidth, hheight, columns, style, memory, granulator;
+	var control3CompView, granulatorLabel, granulatorOnButton, ampKnob, grainDensityKnob, grainBaseDurKnob, durRandKnob, grainRateKnob, grainRateRandKnob, grainPanKnob, grainPanRandKnob, grainPtrDelayKnob, grainPtrDelayRandKnob, grainMinPtrDelayKnob, blackHoleSeqButton;
 
 	// Control Comp View 3
 	control3CompView = CompositeView(top, Rect(0, 0, hwidth, hheight));
 	control3CompView.background = style.at("bank_frame_color");
 	control3CompView.addFlowLayout(10@10);
-	control3CompView.decorator.gap_(10@10);
+	control3CompView.decorator.gap_(10@5);
 
 	// Granulator Label
 	granulatorLabel = StaticText(control3CompView, Rect(0, 0, hwidth-20, 30))
@@ -532,29 +535,29 @@
 	// Granulator Density Control
 	grainDensityKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
 	grainDensityKnob.mode =\vert;
-	grainDensityKnob.value = 40;
+	grainDensityKnob.value = 0.5;
 	grainDensityKnob.action_({
 		var control;
 		control = ControlSpec(1, 80, \linear, 0.1);
 		~set_granulator_density.value(memory, control.map(grainDensityKnob.value));
 	});
 
-	// Playback Rate
-	playBackRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
-	playBackRateKnob.mode =\vert;
-	playBackRateKnob.value = 0.5;
-	playBackRateKnob.action_({
+	// Base Duration of Grains
+	grainBaseDurKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainBaseDurKnob.mode =\vert;
+	grainBaseDurKnob.value = 0.5;
+	grainBaseDurKnob.action_({
 		var control;
-		control = ControlSpec(-3, 3, \linear, 0.01);
-		granulator.set(\rate, control.map(playBackRateKnob.value));
+		control = ControlSpec(0.05, 2, \linear, 0.01);
+		~set_granulator_base_duration.value(memory, control.map(grainBaseDurKnob.value))
 	});
 
 	control3CompView.decorator.nextLine;
 
-	["PB Pos Rate", "Pan Change Rate"].do({
+	["Dur Rand", "PB Rate", "Rate Rand"].do({
 		arg item, i;
 		var label;
-		label = StaticText(control3CompView, Rect(0, 0, hwidth-30/2, 30))
+		label = StaticText(control3CompView, Rect(0, 0, hwidth-40/3, 30))
 		.string_(item)
 		.font_(style.at("text_font"))
 		.align_(\center);
@@ -563,25 +566,116 @@
 
 	control3CompView.decorator.nextLine;
 
-	// rate of change in Play back position for the gran to start
-	posChangeRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-30/2, hwidth-40/3));
-	posChangeRateKnob.mode =\vert;
-	posChangeRateKnob.value = 0.5;
-	posChangeRateKnob.action_({
-		var control;
-		control = ControlSpec(0.1, 2, \linear, 0.01);
-		granulator.set(\posChangeRate, control.map(posChangeRateKnob.value));
-	});
-
-	// Pan Controls
-	panChangeRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-30/2, hwidth-40/3));
-	panChangeRateKnob.mode =\vert;
-	panChangeRateKnob.value = 0.5;
-	panChangeRateKnob.action_({
+	// Grain Duration Randomization
+	durRandKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	durRandKnob.mode =\vert;
+	durRandKnob.value = 0.5;
+	durRandKnob.action_({
 		var control;
 		control = ControlSpec(0, 2, \linear, 0.01);
-		granulator.set(\posChangeRate, control.map(panChangeRateKnob.value));
+		~set_granulator_duration_randomization.value(memory, control.map(durRandKnob.value));
 	});
+
+	// Grain Playback Rate
+	grainRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainRateKnob.mode =\vert;
+	grainRateKnob.value = 0.25; // set to start at 1
+	grainRateKnob.action_({
+		var control;
+		control = ControlSpec(0, 4, \linear, 0.01);
+		~set_granulator_rate.value(memory, control.map(grainRateKnob.value));
+	});
+
+	// Playback Rate Randomization
+	grainRateRandKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainRateRandKnob.mode =\vert;
+	grainRateRandKnob.value = 0.0;
+	grainRateRandKnob.action_({
+		var control;
+		control = ControlSpec(0, 0.99, \linear, 0.01);
+		~set_granulator_rate_randomization.value(memory, control.map(grainRateRandKnob.value))
+	});
+
+	control3CompView.decorator.nextLine;
+
+	["Pan", "Pan Rand", "Ptr Delay"].do({
+		arg item, i;
+		var label;
+		label = StaticText(control3CompView, Rect(0, 0, hwidth-40/3, 30))
+		.string_(item)
+		.font_(style.at("text_font"))
+		.align_(\center);
+		label.background = style.at("bank_frame_color");
+	});
+
+
+	// Grainulator Pan
+	grainPanKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainPanKnob.mode =\vert;
+	grainPanKnob.value = 0.5;
+	grainPanKnob.action_({
+		var control;
+		control = ControlSpec(-1, 1, \linear, 0.01);
+		~set_granulator_pan.value(memory, control.map(grainPanKnob.value));
+	});
+
+	// Grain Pan Randomization
+	grainPanRandKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainPanRandKnob.mode =\vert;
+	grainPanRandKnob.value = 0.0;
+	grainPanRandKnob.action_({
+		var control;
+		control = ControlSpec(0, 1, \linear, 0.01);
+		~set_granulator_pan_randomization.value(memory, control.map(grainPanRandKnob.value));
+	});
+
+	// Grain Pointer Delay
+	grainPtrDelayKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainPtrDelayKnob.mode =\vert;
+	grainPtrDelayKnob.value = 0.5;
+	grainPtrDelayKnob.action_({
+		var control;
+		control = ControlSpec(0, ~server.sampleRate * columns * memory.at(\seq_mem).at(\delta), \linear, 0.01);
+		~set_granulator_pointer_sample_delay.value(memory, control.map(grainPtrDelayKnob.value))
+	});
+
+	["Ptr Delay Rand", "Min Ptr Delay", "Black Hole"].do({
+		arg item, i;
+		var label;
+		label = StaticText(control3CompView, Rect(0, 0, hwidth-40/3, 40))
+		.string_(item)
+		.font_(style.at("text_font"))
+		.align_(\center);
+		label.background = style.at("bank_frame_color");
+	});
+
+	// Grainulator Pointer Delay Randomization
+	grainPtrDelayRandKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainPtrDelayRandKnob.mode =\vert;
+	grainPtrDelayRandKnob.value = 0.5;
+	grainPtrDelayRandKnob.action_({
+		var control;
+		control = ControlSpec(0, ~server.sampleRate * columns * memory.at(\seq_mem).at(\delta), \linear, 0.01);
+		~set_granulator_pointer_sample_randomization.value(memory, control.map(grainPtrDelayRandKnob.value));
+	});
+
+	// Grain Minimum Pointer Delay
+	grainMinPtrDelayKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainMinPtrDelayKnob.mode =\vert;
+	grainMinPtrDelayKnob.value = 1000 / ~server.sampleRate;
+	grainMinPtrDelayKnob.action_({
+		var control;
+		control = ControlSpec(1, ~server.sampleRate * columns * memory.at(\seq_mem).at(\delta), \linear, 0.01);
+		~set_granulator_minimum_pointer_delay.value(memory, control.map(grainPanRandKnob.value));
+	});
+
+	// Black Hole Button
+	blackHoleSeqButton = Button.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3))
+	.states_([["On", Color.white, style.at("text_color")], ["Off", Color.white, Color.red]])
+	.action_({
+		blackHoleSeqButton.value.postln;
+	});
+
 };
 
 ~volume_midi_control = {

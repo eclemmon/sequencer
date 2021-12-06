@@ -237,9 +237,9 @@ SynthDef(\phase_mod, {
 SynthDef.new(\reverb, {
 	arg input=99, output=0, mix=0, room=0, damp=0, amp=1;
 	var in, sig;
-	in = In.ar(input, 1);
-	sig = FreeVerb.ar(in, mix, room, damp, amp);
-	Out.ar(output, sig!2);
+	in = In.ar(input, 2);
+	sig = FreeVerb2.ar(in[0], in[1], mix, room, damp, amp);
+	Out.ar(output, sig);
 }).add;
 
 SynthDef.new(\buzzy_bram_sequencer, {
