@@ -236,7 +236,6 @@
 		control_name = ~build_control_name.value(memory, \amp);
 		pdef_name = \p_ ++ control_name;
 		memory.at(\seq_mem).put(control_name, volumeSlider.value);
-		// memory.at(\seq_mem).at(control_name).postln;
 		Pdefn(pdef_name.asSymbol, control.map(memory.at(\seq_mem).at(control_name)));
 		volumeNumberBox.value_(control.map(memory.at(\seq_mem).at(control_name)));
 	});
@@ -464,8 +463,8 @@
 };
 
 ~build_sequencer_control_panel_3 = {
-	arg top, hwidth, hheight, style, memory, stacked_buttons, granulator;
-	var control3CompView, granulatorLabel, granulatorOnButton, trigRateKnob, grainLengthKnob, playBackRateKnob;
+	arg top, hwidth, hheight, style, memory, granulator;
+	var control3CompView, granulatorLabel, granulatorOnButton, trigRateKnob, grainLengthKnob, playBackRateKnob, posChangeRateKnob, panChangeRateKnob;
 
 	// Control Comp View 3
 	control3CompView = CompositeView(top, Rect(0, 0, hwidth, hheight));
@@ -532,7 +531,9 @@
 	trigRateKnob.mode =\vert;
 	trigRateKnob.value = 0.5;
 	trigRateKnob.action_({
-		// reverb.set(\mix, trigRateKnob.value);
+		var control;
+		control = ControlSpec(0.5, 20, \linear, 0.01);
+		granulator.set(\triggerRate, control.map(trigRateKnob.value));
 	});
 
 	// Grain Length
@@ -540,7 +541,9 @@
 	grainLengthKnob.mode =\vert;
 	grainLengthKnob.value = 0.5;
 	grainLengthKnob.action_({
-		// reverb.set(\mix, trigRateKnob.value);
+		var control;
+		control = ControlSpec(0.05, 1, \linear, 0.01);
+		granulator.set(\dur, control.map(grainLengthKnob.value));
 	});
 
 	// Playback Rate
@@ -548,12 +551,44 @@
 	playBackRateKnob.mode =\vert;
 	playBackRateKnob.value = 0.5;
 	playBackRateKnob.action_({
-		// reverb.set(\mix, trigRateKnob.value);
+		var control;
+		control = ControlSpec(-3, 3, \linear, 0.01);
+		granulator.set(\rate, control.map(playBackRateKnob.value));
 	});
 
+	control3CompView.decorator.nextLine;
+
+	["PB Pos Rate", "Pan Change Rate"].do({
+		arg item, i;
+		var label;
+		label = StaticText(control3CompView, Rect(0, 0, hwidth-30/2, 30))
+		.string_(item)
+		.font_(style.at("text_font"))
+		.align_(\center);
+		label.background = style.at("bank_frame_color");
+	});
+
+	control3CompView.decorator.nextLine;
+
 	// rate of change in Play back position for the gran to start
+	posChangeRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-30/2, hwidth-40/3));
+	posChangeRateKnob.mode =\vert;
+	posChangeRateKnob.value = 0.5;
+	posChangeRateKnob.action_({
+		var control;
+		control = ControlSpec(0.1, 2, \linear, 0.01);
+		granulator.set(\posChangeRate, control.map(posChangeRateKnob.value));
+	});
 
 	// Pan Controls
+	panChangeRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-30/2, hwidth-40/3));
+	panChangeRateKnob.mode =\vert;
+	panChangeRateKnob.value = 0.5;
+	panChangeRateKnob.action_({
+		var control;
+		control = ControlSpec(0, 2, \linear, 0.01);
+		granulator.set(\posChangeRate, control.map(panChangeRateKnob.value));
+	});
 };
 
 ~volume_midi_control = {

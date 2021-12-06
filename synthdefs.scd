@@ -2,7 +2,7 @@
 (
 
 SynthDef.new(\recordBufSequencer, {
-	arg input=0, buffer, loop=1, run, trigger, recLevel=1.0, preLevel = 0.0;
+	arg input=0, buffer, loop=1, run=1, trigger=1, recLevel=1.0, preLevel = 0.0;
 	var record;
 	record = RecordBuf.ar(SoundIn.ar(input),
 		buffer,
@@ -13,6 +13,29 @@ SynthDef.new(\recordBufSequencer, {
 		trigger: trigger);
 }).add;
 
+// H/t Eli Fieldsteel!
+SynthDef.new(\inputRouter, {
+	arg in=0, out=0, amp=1;
+	var sig;
+	sig = In.ar(in) * amp;
+	Out.ar(out, sig);
+}).add;
+
+SynthDef.new(\pointer, {
+	arg out=0, buf=0;
+	var sig;
+	sig = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf));
+	Out.ar(out, sig);
+}).add;
+
+SynthDef.new(\recordBuffer, {
+	arg ptrIn=0, recIn=0, buf=0;
+	var ptr, sig;
+	ptr = In.ar(ptrIn, 1);
+	sig = In.ar(recIn, 1);
+	BufWr.ar(sig, buf, ptr);
+}).add;
+
 SynthDef.new(\granulatorSplitter, {
 	arg in=10, out1=89, out2=99;
 	var input;
@@ -21,10 +44,11 @@ SynthDef.new(\granulatorSplitter, {
 }).add;
 
 SynthDef(\granulatorSequencer, {
-	arg out, triggerRate=10, dur=0.1, sndbuf, rate=1, posChangeRate=5, interp=2, pan=0, amp, add;
-	var gran, trigger, pos;
+	arg out, triggerRate=10, dur=0.1, sndbuf, rate=1, posChangeRate=5, interp=2, panRate=0, amp=1;
+	var gran, trigger, pos, pan;
 	trigger = Dust.kr(triggerRate);
 	pos = Dust.kr(posChangeRate);
+	pan = LFNoise1.kr(10);
 	gran = GrainBuf.ar(2, trigger, dur, sndbuf, pos, interp, 2, pan, mul: amp);
 	Out.ar(out, gran);
 }).add;
