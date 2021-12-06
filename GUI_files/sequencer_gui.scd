@@ -1,6 +1,6 @@
 // Sequencer
 (
-var buttonsize=40, columns=16, rows=8, window, top_level, track_buttons_container, ctrl_panel_container, header, buttons, track, sequencer_tab_buttons, stacked_buttons, sequencer_ctrl_1, sequencer_ctrl_2, sequencer_ctrl_3, start_instrument=\default, pattern, instruments, memory=~gm, tab_names=['melody', 'harmony', 'bass'];
+var buttonsize=40, columns=16, rows=8, window, top_level, track_buttons_container, ctrl_panel_container, header, buttons, track, sequencer_tab_buttons, stacked_buttons, sequencer_ctrl_1, sequencer_ctrl_2, sequencer_ctrl_3, start_instrument=\default, pattern, instruments=[\default, \peep_sequencer, \sin_tone_sequencer, \buzzy_bram_sequencer, \phase_mod_sequencer], memory=~gm, tab_names=['melody', 'harmony', 'bass'];
 
 // Initialize Memory
 memory.atFail(\seq_mem, {
@@ -29,8 +29,8 @@ memory.atFail(\seq_mem, {
 		\granulator_on, false,
 		\granAmp, 0.5,
 		\granOut, 0,
-		\granAttack, 1,
-		\granRelease, 1,
+		\granAttack, 0.1,
+		\granRelease, 0.1,
 		\granGate, 1,
 		\granSync, 1,
 		\granDensity, 40,
@@ -76,8 +76,6 @@ memory.at(\seq_mem).put(\sequencerRecord,
 	], memory.at(\seq_mem).at(\recGroup))
 );
 
-instruments = [\default, \peep_sequencer, \sin_tone_sequencer, \buzzy_bram_sequencer, \phase_mod_sequencer];
-
 // Build GUI
 // Build window, top_level and header
 window = ~build_window.value("Sequencer", ~style_1, buttonsize*columns+740, buttonsize*rows+380);
@@ -95,14 +93,14 @@ stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, s
 
 // Built Control panels
 ctrl_panel_container = ~build_track_buttons_container.value(top_level, 225+190+200, buttonsize*rows+170, ~style_1);
-sequencer_ctrl_1 = ~build_sequencer_control_panel_1.value(ctrl_panel_container, 225, buttonsize*rows+170, ~style_1, instruments, stacked_buttons, memory);
+sequencer_ctrl_1 = ~build_sequencer_control_panel_1.value(ctrl_panel_container, 225, buttonsize*rows+170, ~style_1, instruments, stacked_buttons, memory, columns);
 sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 190, buttonsize*rows+170, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb), track);
 sequencer_ctrl_3 = ~build_sequencer_control_panel_3.value(ctrl_panel_container, 200, buttonsize*rows+170, columns, ~style_1, memory, memory.at(\seq_mem).at(\granulatorSequencer));
 
 Pdefn(\melody, Ppar(
 	stacked_buttons[0][1].collect({
 		arg c, r;
-		var currentOctaveDegree = stacked_buttons[0][1].size - r - 1 + memory.at(\seq_mem).at(\melody_octave);
+		var currentOctaveDegree = stacked_buttons[0][1].size - r + memory.at(\seq_mem).at(\melody_octave);
 		Pbind(
 			\instrument, Pdefn(\p_melody_instrument, memory.at(\seq_mem).at(\melody_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\melody_scale)),
@@ -119,7 +117,7 @@ Pdefn(\melody, Ppar(
 Pdefn(\harmony, Ppar(
 	stacked_buttons[1][1].collect({
 		arg c, r;
-		var currentHarmonyOctaveDegree = stacked_buttons[1][1].size - r - 1 + memory.at(\seq_mem).at(\harmony_octave);
+		var currentHarmonyOctaveDegree = stacked_buttons[1][1].size - r + memory.at(\seq_mem).at(\harmony_octave);
 		Pbind(
 			\instrument, Pdefn(\p_harmony_instrument, memory.at(\seq_mem).at(\harmony_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\harmony_scale)),
@@ -134,7 +132,7 @@ Pdefn(\harmony, Ppar(
 Pdefn(\bass, Ppar(
 	stacked_buttons[2][1].collect({
 		arg c, r;
-		var currentBassOctaveDegree = stacked_buttons[2][1].size - r - 1 + memory.at(\seq_mem).at(\bass_octave);
+		var currentBassOctaveDegree = stacked_buttons[2][1].size - r + memory.at(\seq_mem).at(\bass_octave);
 		Pbind(
 			\instrument, Pdefn(\p_bass_instrument, memory.at(\seq_mem).at(\bass_instrument)),
 			\scale, Pdefn(\p_scale, memory.at(\seq_mem).at(\bass_scale)),

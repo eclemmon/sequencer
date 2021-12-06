@@ -52,6 +52,7 @@
 
 	buttons[0].value = 1;
 	top_level.decorator.nextLine;
+
 	buttons;
 };
 
@@ -65,7 +66,6 @@
 	buttonsStacked = Array.fill(num_tab_buttons, {arg i; ~build_sequencer_buttons.value(view, buttonsize*columns, buttonsize*rows, style, columns, rows, buttonsize)});
 
 	compViews = Array.fill(num_tab_buttons, {arg i; buttonsStacked[i][0]});
-	compViews.postln;
 
 	view.layout = VLayout(
 		stack = StackLayout(
@@ -89,6 +89,7 @@
 					button.value = 1;
 				});
 			});
+			~set_buttons_sliders_numBoxes.value(memory);
 		});
 
 	});
@@ -155,7 +156,7 @@
 
 
 ~build_sequencer_control_panel_1 = {
-	arg top, hwidth, hheight, style, instruments=[\default], butCompViews, memory;
+	arg top, hwidth, hheight, style, instruments=[\default], butCompViews, memory, columns;
 	var compView, speedSliderLabel, volumeSliderLabel, speedSlider, volumeSlider, speedNumberBox, volumeNumberBox, scaleMenuLabel, scaleMenu, instrumentLabel, instrumentMenu, clearButton, durationSliderLabel, noteDurationSlider, noteDurationBox;
 	// Slider Composite View
 	compView = CompositeView(top, Rect(0, 0, hwidth, hheight));
@@ -215,9 +216,12 @@
 		var control;
 		control = ControlSpec(0.05, 2, \exp, 0.01);
 		memory.at(\seq_mem).put(\delta, speedSlider.value);
+		memory.at(\seq_mem).at(\buffer).numFrames = ~server.sampleRate * columns * memory.at(\seq_mem).at(\delta);
 		Pdefn(\p_delta, control.map(memory.at(\seq_mem).at(\delta)));
 		speedNumberBox.value_(memory.at(\seq_mem).at(\delta));
 	});
+
+	memory.at(\seq_mem).put(\speedSlider, speedSlider);
 
 	noteDurationSlider.action_({
 		var control, control_name, pdef_name;
@@ -229,7 +233,9 @@
 		noteDurationBox.value_(control.map(memory.at(\seq_mem).at(control_name)));
 	});
 
-	// Slider Control
+	memory.at(\seq_mem).put(\noteDurationSlider, noteDurationSlider);
+
+	// Volume Slider Control Action
 	volumeSlider.action_({
 		var control, control_name, pdef_name;
 		control = ControlSpec(0, 0.7, \linear, 0.01);
@@ -239,6 +245,8 @@
 		Pdefn(pdef_name.asSymbol, control.map(memory.at(\seq_mem).at(control_name)));
 		volumeNumberBox.value_(control.map(memory.at(\seq_mem).at(control_name)));
 	});
+
+	memory.at(\seq_mem).put(\volumeSlider, volumeSlider);
 
 	compView.decorator.nextLine;
 
@@ -283,8 +291,11 @@
 		control_name = ~build_control_name.value(memory, \instrument);
 		pdef_name = \p_ ++ control_name;
 		memory.at(\seq_mem).put(control_name, menu.item);
+		memory.at(\seq_mem).put(control_name ++ '_idx', menu.value);
 		Pdefn(pdef_name.asSymbol, menu.item);
 	});
+
+	memory.at(\seq_mem).put(\instrumentMenu, instrumentMenu);
 
 	compView.decorator.nextLine;
 
@@ -295,7 +306,6 @@
 	clearButton.action_({
 		butCompViews.do({
 			arg butCompView;
-			butCompView[0].postln;
 			butCompView[0].children(Button).do({
 				arg item, i;
 				if(item.value == 1, {item.valueAction = 0;})
@@ -396,7 +406,6 @@
 			memory.at(\seq_mem).put(\reverb_on, true);
 			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 99);
 			memory.at(\seq_mem).at(\granulatorSequencer).set(\out, 99);
-
 		}, {
 			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 0);
 			memory.at(\seq_mem).at(\granulatorSequencer).set(\out, 0);
@@ -463,6 +472,8 @@
 		deviceName.item.postln;
 		Server.default.options.outDevice = deviceName.item;
 	});
+
+	control2CompView;
 };
 
 ~build_sequencer_control_panel_3 = {
@@ -538,7 +549,7 @@
 	grainDensityKnob.value = 0.5;
 	grainDensityKnob.action_({
 		var control;
-		control = ControlSpec(1, 80, \linear, 0.1);
+		control = ControlSpec(1, 200, \exp, 0.1);
 		~set_granulator_density.value(memory, control.map(grainDensityKnob.value));
 	});
 
@@ -548,7 +559,7 @@
 	grainBaseDurKnob.value = 0.5;
 	grainBaseDurKnob.action_({
 		var control;
-		control = ControlSpec(0.05, 2, \linear, 0.01);
+		control = ControlSpec(0.05, 2, \exp, 0.01);
 		~set_granulator_base_duration.value(memory, control.map(grainBaseDurKnob.value))
 	});
 
@@ -569,10 +580,10 @@
 	// Grain Duration Randomization
 	durRandKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
 	durRandKnob.mode =\vert;
-	durRandKnob.value = 0.5;
+	durRandKnob.value = 1;
 	durRandKnob.action_({
 		var control;
-		control = ControlSpec(0, 2, \linear, 0.01);
+		control = ControlSpec(1, 0.005, \linear, 0.01);
 		~set_granulator_duration_randomization.value(memory, control.map(durRandKnob.value));
 	});
 
@@ -582,17 +593,17 @@
 	grainRateKnob.value = 0.25; // set to start at 1
 	grainRateKnob.action_({
 		var control;
-		control = ControlSpec(0, 4, \linear, 0.01);
+		control = ControlSpec(0.01, 4, \linear, 0.01);
 		~set_granulator_rate.value(memory, control.map(grainRateKnob.value));
 	});
 
 	// Playback Rate Randomization
 	grainRateRandKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
 	grainRateRandKnob.mode =\vert;
-	grainRateRandKnob.value = 0.0;
+	grainRateRandKnob.value = 0.99;
 	grainRateRandKnob.action_({
 		var control;
-		control = ControlSpec(0, 0.99, \linear, 0.01);
+		control = ControlSpec(0.01, 0.99, \linear, 0.01);
 		~set_granulator_rate_randomization.value(memory, control.map(grainRateRandKnob.value))
 	});
 
@@ -673,9 +684,19 @@
 	blackHoleSeqButton = Button.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3))
 	.states_([["On", Color.white, style.at("text_color")], ["Off", Color.white, Color.red]])
 	.action_({
-		blackHoleSeqButton.value.postln;
+		if (blackHoleSeqButton.value == 1, {
+			// Send the splitter out to the ether
+			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 110);
+		}, {
+			if (memory.at(\seq_mem).at(\reverb_on), {
+				memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 99);
+			}, {
+				memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 0);
+			});
+		});
 	});
 
+	control3CompView;
 };
 
 ~volume_midi_control = {
@@ -716,6 +737,15 @@
 	var str;
 	str = memory.at(\seq_mem).at(\current_name) ++ "_" ++ name;
 	str.asSymbol;
+};
+
+~set_buttons_sliders_numBoxes = {
+	arg memory;
+	var control_name;
+	memory.at(\seq_mem).at(\noteDurationSlider).value = memory.at(\seq_mem).at(~build_control_name.value(memory, \sus));
+	memory.at(\seq_mem).at(\volumeSlider).value = memory.at(\seq_mem).at(~build_control_name.value(memory, \amp));
+	memory.at(\seq_mem).at(\instrumentMenu).value = memory.at(\seq_mem).at(~build_control_name.value(memory, \instrument) ++ '_idx');
+
 };
 
 )
