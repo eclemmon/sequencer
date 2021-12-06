@@ -464,7 +464,7 @@
 
 ~build_sequencer_control_panel_3 = {
 	arg top, hwidth, hheight, style, memory, granulator;
-	var control3CompView, granulatorLabel, granulatorOnButton, ampKnob, grainLengthKnob, playBackRateKnob, posChangeRateKnob, panChangeRateKnob;
+	var control3CompView, granulatorLabel, granulatorOnButton, ampKnob, grainDensityKnob, playBackRateKnob, posChangeRateKnob, panChangeRateKnob;
 
 	// Control Comp View 3
 	control3CompView = CompositeView(top, Rect(0, 0, hwidth, hheight));
@@ -519,7 +519,7 @@
 
 	control3CompView.decorator.nextLine;
 
-	// Trigger Rate
+	// Granulator Amplitude
 	ampKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
 	ampKnob.mode =\vert;
 	ampKnob.value = 0.5;
@@ -529,14 +529,14 @@
 		~set_granulator_amp.value(memory, control.map(ampKnob.value));
 	});
 
-	// Grain Length
-	grainLengthKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
-	grainLengthKnob.mode =\vert;
-	grainLengthKnob.value = 0.5;
-	grainLengthKnob.action_({
+	// Granulator Density Control
+	grainDensityKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	grainDensityKnob.mode =\vert;
+	grainDensityKnob.value = 40;
+	grainDensityKnob.action_({
 		var control;
-		control = ControlSpec(0.05, 1, \linear, 0.01);
-		granulator.set(\dur, control.map(grainLengthKnob.value));
+		control = ControlSpec(1, 80, \linear, 0.1);
+		~set_granulator_density.value(memory, control.map(grainDensityKnob.value));
 	});
 
 	// Playback Rate

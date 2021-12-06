@@ -34,6 +34,9 @@ Server.default.options.inDevice_("MacBook Pro Microphone");*/
 		// LOAD GUI CONSTRUCTOR
 		thisProcess.interpreter.executeFile(path +/+ "/GUI_files/GUI_Constructor.scd");
 
+		// LOAD GRANULATOR FUNCTIONS
+		thisProcess.interpreter.executeFile(path +/+ "/GUI_files/granulator_functions.scd");
+
 		~server.sync;
 		// Set global memory storage
 		~gm = Dictionary.new();

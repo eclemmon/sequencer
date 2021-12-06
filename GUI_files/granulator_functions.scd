@@ -31,6 +31,7 @@
 ~turn_granulator_off = {
 	arg memory;
 	memory.at(\seq_mem).at(\granulatorSequencer).set(\gate, 0);
+	memory.at(\seq_mem).put(\granulatorSequencer, nil)
 };
 
 ~set_granulator_amp = {
