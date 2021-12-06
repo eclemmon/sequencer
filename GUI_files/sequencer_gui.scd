@@ -25,7 +25,25 @@ memory.atFail(\seq_mem, {
 		\pattern_out, 79,
 		\current_name, \melody,
 		\reverb_on, false,
-		\granulator_on, false
+		// Granulator Data
+		\granulator_on, false,
+		\granAmp, 0.5,
+		\granOut, 0,
+		\granAttack, 1,
+		\granRelease, 1,
+		\granGate, 1,
+		\granSync, 1,
+		\granDensity, 40,
+		\granBaseDur, 40,
+		\granDurRand, 1,
+		\granRate, 1,
+		\granRateRand, 1,
+		\granPan, 0,
+		\granPanRand, 0,
+		\granGrainEnv, -1,
+		\granPtrSampleDelay, 20000,
+		\granPtrRandSamples, 5000,
+		\granMinPtrDelay, 1000
 	]));
 });
 
@@ -51,18 +69,12 @@ memory.at(\seq_mem).put(\pointer, Synth(\pointer,
 	[\buf, memory.at(\seq_mem).at(\buffer),
 		\out, memory.at(\seq_mem).at(\ptrBus)], memory.at(\seq_mem).at(\ptrGroup)));
 memory.at(\seq_mem).put(\sequencerRecord,
-	Synth(\recordBuffer,
-		[
-			\ptrIn, memory.at(\seq_mem).at(\ptrBus),
-			\recIn, memory.at(\seq_mem).at(\inputBus),
-			\buf, memory.at(\seq_mem).at(\buffer)
-], memory.at(\seq_mem).at(\recGroup)));
-
-
-~gm.at(\seq_mem).at(\buffer).plot;
-
-// Initialize granulator synth def
-memory.at(\seq_mem).put(\granulatorSequencer, Synth(\granulatorSequencer, [\out, 0, \sndbuf, memory.at(\seq_mem).at(\buffer)]));
+	Synth(\recordBuffer, [
+		\ptrIn, memory.at(\seq_mem).at(\ptrBus),
+		\recIn, memory.at(\seq_mem).at(\inputBus),
+		\buf, memory.at(\seq_mem).at(\buffer)
+	], memory.at(\seq_mem).at(\recGroup))
+);
 
 instruments = [\default, \peep_sequencer, \sin_tone_sequencer, \buzzy_bram_sequencer, \phase_mod_sequencer];
 

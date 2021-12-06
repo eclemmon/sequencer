@@ -43,14 +43,40 @@ SynthDef.new(\granulatorSplitter, {
 	Out.ar([out1, out2], input);
 }).add;
 
-SynthDef(\granulatorSequencer, {
-	arg out, triggerRate=10, dur=0.1, sndbuf, rate=1, posChangeRate=5, interp=2, panRate=0, amp=1;
-	var gran, trigger, pos, pan;
-	trigger = Dust.kr(triggerRate);
-	pos = Dust.kr(posChangeRate);
-	pan = LFNoise1.kr(10);
-	gran = GrainBuf.ar(2, trigger, dur, sndbuf, pos, interp, 2, pan, mul: amp);
-	Out.ar(out, gran);
+SynthDef.new(\granulatorSequencer, {
+	arg amp=0.5, out=0, buf=0, attack=1, release=1, gate=1, sync=1, density=40, baseDur=0.05, durRand=1, rate=1, rateRand=1, pan=0, panRand=0, grainEnv=(-1), ptrBus=0, ptrSampleDelay=20000, ptrRandSamples=5000, minPtrDelay=1000;
+	var sig, env, densCtrl, durCtrl, rateCtrl, panCtrl, ptr, ptrRand, totalDelay, maxGrainDur, grain;
+
+	env = EnvGen.kr(Env.asr(attack, 1, release), gate, doneAction:2);
+	densCtrl = Select.ar(sync, [Dust.ar(density), Impulse.ar(density)]);
+	durCtrl = baseDur * LFNoise1.ar(100).exprange(1/durRand, durRand);
+	rateCtrl = rate * LFNoise1.ar(100).exprange(1/rateRand, rateRand);
+	panCtrl = pan + LFNoise1.kr(100).bipolar(panRand);
+
+	ptrRand = LFNoise1.ar(100).bipolar(ptrRandSamples);
+	totalDelay = max(ptrSampleDelay - ptrRand, minPtrDelay);
+
+	ptr = In.ar(ptrBus, 1);
+	ptr = ptr - totalDelay;
+	ptr = ptr / BufFrames.kr(buf);
+
+	maxGrainDur = (totalDelay / rateCtrl) /SampleRate.ir;
+	durCtrl = min(durCtrl, maxGrainDur);
+
+	grain = GrainBuf.ar(
+		2,
+		densCtrl,
+		durCtrl,
+		buf,
+		rateCtrl,
+		ptr,
+		2,
+		panCtrl,
+		grainEnv
+	);
+
+	sig = grain * env * amp;
+	Out.ar(out, sig);
 }).add;
 
 SynthDef.new(\hpf, {

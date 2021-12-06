@@ -464,7 +464,7 @@
 
 ~build_sequencer_control_panel_3 = {
 	arg top, hwidth, hheight, style, memory, granulator;
-	var control3CompView, granulatorLabel, granulatorOnButton, trigRateKnob, grainLengthKnob, playBackRateKnob, posChangeRateKnob, panChangeRateKnob;
+	var control3CompView, granulatorLabel, granulatorOnButton, ampKnob, grainLengthKnob, playBackRateKnob, posChangeRateKnob, panChangeRateKnob;
 
 	// Control Comp View 3
 	control3CompView = CompositeView(top, Rect(0, 0, hwidth, hheight));
@@ -485,36 +485,29 @@
 	.states_([["Turn Granulator On", Color.white, style.at("text_color")], ["Turn Granulator Off", Color.white, Color.red]])
 	.action_({
 		if (granulatorOnButton.value == 1, {
-			// If granulator is turned on, send pattern out to splitter
-			memory.at(\seq_mem).put(\pattern_out, 10);
-
 			if (memory.at(\seq_mem).at(\reverb_on), {
-				// If reverb is on send granulator to reverb
-				memory.at(\seq_mem).put(\granulator_out, 99);
+				// Set granulator out to bus 99
+				memory.at(\seq_mem).put(\granOut, 99);
+				// Turn Granulator On
+				~turn_granulator_on.value(memory);
 			}, {
 				// else send granulator to main out
-				memory.at(\seq_mem).put(\granulator_out, 0);
+				memory.at(\seq_mem).put(\granOut, 0);
+				~turn_granulator_on.value(memory);
 			});
 			// Set granulator on to true
 			memory.at(\seq_mem).put(\granulator_on, true);
 		}, {
-			// If granulator is turned off
-			if (memory.at(\seq_mem).at(\reverb_on), {
-				// If reverb is on send pattern to reverb
-				memory.at(\seq_mem).put(\pattern_out, 99);
-			}, {
-				// if reverb is off, send pattern to main out.
-				memory.at(\seq_mem).put(\pattern_out, 0);
-			});
-			// Set granulatory on to false
+			//
+			~turn_granulator_off.value(memory);
+			// Set granulator on to false
 			memory.at(\seq_mem).put(\granulator_on, false);
 		});
-		Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out));
 	});
 
 	control3CompView.decorator.nextLine;
 
-	["Trig Rate", "Grain Len", "Grain PBR"].do({
+	["Amp", "Density", "Base Dur"].do({
 		arg item, i;
 		var label;
 		label = StaticText(control3CompView, Rect(0, 0, hwidth-40/3, 30))
@@ -527,13 +520,13 @@
 	control3CompView.decorator.nextLine;
 
 	// Trigger Rate
-	trigRateKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
-	trigRateKnob.mode =\vert;
-	trigRateKnob.value = 0.5;
-	trigRateKnob.action_({
+	ampKnob = Knob.new(control3CompView, Rect(0, 0, hwidth-40/3, hwidth-40/3));
+	ampKnob.mode =\vert;
+	ampKnob.value = 0.5;
+	ampKnob.action_({
 		var control;
-		control = ControlSpec(0.5, 20, \linear, 0.01);
-		granulator.set(\triggerRate, control.map(trigRateKnob.value));
+		control = ControlSpec(0, 1, \linear, 0.01);
+		~set_granulator_amp.value(memory, control.map(ampKnob.value));
 	});
 
 	// Grain Length
