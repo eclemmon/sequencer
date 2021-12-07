@@ -120,7 +120,7 @@ SynthDef(\delay_2ch, {
 
 SynthDef.new(\sin_tone_sequencer, {
 	// a sine tone synth
-	arg freq=440, amp=1, bend=0, out=0, dur=1, gate=0;
+	arg freq=440, amp=1, bend=0, out=0, dur=1, gate=1;
 	var sig, env;
 	sig = SinOsc.ar(freq * bend.midiratio)!2;
 	env = EnvGen.kr(Env.adsr(attackTime: 0.01), gate: gate, doneAction:2);
@@ -130,7 +130,7 @@ SynthDef.new(\sin_tone_sequencer, {
 
 SynthDef(\peep_sequencer,{
 	// a sine tone peep.
-	arg freq=100, amp=0.5, out=0, gate=0;
+	arg freq=100, amp=0.5, out=0, gate=1;
 	var snd = SinOsc.ar(freq);
 	snd = snd * EnvGen.ar(Env.perc(0.001,0.25), gate: gate, doneAction:2) * amp;
 	Out.ar(out, snd ! 2);
@@ -138,7 +138,7 @@ SynthDef(\peep_sequencer,{
 
 SynthDef.new(\subtract_noise_synth_sequencer, {
 	// A synth that generates windy-sounding pitches via subtractive synthesis
-	arg out=0, amp=1, freq=440, texture_speed=5, attack=0.1, texture_dur=0.4, trig=0, dur=15, rq=0.001, pos=0, gate=0;
+	arg out=0, amp=1, freq=440, texture_speed=5, attack=0.1, texture_dur=0.4, trig=0, dur=15, rq=0.001, pos=0, gate=1;
 	var noise, rand_amp, filter, texture_trig, env, texture, pan;
 	env = EnvGen.kr(Env.adsr, gate, doneAction:2);
 	noise = ClipNoise.ar(1);
@@ -150,7 +150,7 @@ SynthDef.new(\subtract_noise_synth_sequencer, {
 
 SynthDef(\sin_fb_synth_sequencer, {
 	// Sin feedback synth
-	arg out, gate=0, freq=440, amp=2, feedback_start=0.5, feedback_peak=1.0, texture_dur=0.1;
+	arg out, gate=1, freq=440, amp=1, feedback_start=0.5, feedback_peak=1.0, texture_dur=0.1;
 	var env, sig, lfo, sinfb, pan, feedback_env, texture_trig;
 	env = EnvGen.kr(Env.adsr, gate, doneAction:2);
 	feedback_env = EnvGen.kr(Env([feedback_start+0.01, feedback_peak, feedback_start+0.01], [texture_dur/2, texture_dur/2], curve: 'wel'), gate: gate);
@@ -172,7 +172,7 @@ SynthDef.new(\reverb, {
 
 SynthDef.new(\buzzy_bram_sequencer, {
 	// Buzzy saw wave synth with a lpf to take the edge off and a sin wave to assert the fundamental
-	arg amp=1, out=0, freq=440, bend=0, rq=0.5, dur=1, gate=0;
+	arg amp=1, out=0, freq=440, bend=0, rq=0.5, dur=1, gate=1;
 	var pan, sig, trigger, saw, lpf, env;
 	saw = LFSaw.ar(freq * bend.midiratio, mul:0.7)!2;
 	lpf = RLPF.ar(saw, 1000, rq, 1/rq.sqrt);
@@ -183,7 +183,7 @@ SynthDef.new(\buzzy_bram_sequencer, {
 
 SynthDef(\phase_mod_sequencer, {
 	// A complicated phase mod instrument. Good for higher notes + very low notes. Souonds better with long tails as the instrument is designed to develop gracefully over long periods of time.
-	arg amp, out=0, dur=3, attack=0.1, release=0.1, decay_time=0.1, decay_amp=0.7, freq=440, fmod_freq=533, fmod_mul=12, sustain_freq=660, pos=0, filter_env_start_freq=880, filter_env_end_freq=440, filter_sus_dur=1, filter_decay_dur=0.1, filter_release_time=0.1, tail_length=1, tail_length_level=0.1, mRatio=1, cRatio=1, gate=0;
+	arg amp=8, out=0, dur=3, attack=0.1, release=0.1, decay_time=0.1, decay_amp=0.7, freq=440, fmod_freq=533, fmod_mul=12, sustain_freq=660, pos=0, filter_env_start_freq=880, filter_env_end_freq=440, filter_sus_dur=1, filter_decay_dur=0.1, filter_release_time=0.1, tail_length=1, tail_length_level=0.1, mRatio=1, cRatio=1, gate=1;
 	var pan, sig, env, filter, carrier, modulator, fmod_env, filter_env, lfo_amp;
 
 	// Control Envelopes
@@ -209,7 +209,7 @@ SynthDef(\phase_mod_sequencer, {
 
 	// Modulator and Carrier
 	modulator = SinOsc.ar(freq * mRatio, mul: fmod_mul) * (fmod_env);
-	carrier = SinOsc.ar(freq * cRatio, modulator.wrap(0,4pi), mul: 1 + lfo_amp);
+	carrier = SinOsc.ar(freq * cRatio, modulator.wrap(0,4pi), mul: 12 + lfo_amp);
 
 	// Build signal
 	sig = carrier * env;
