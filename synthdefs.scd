@@ -1,20 +1,9 @@
 // SynthDefs
 (
-
-SynthDef.new(\recordBufSequencer, {
-	arg input=0, buffer, loop=1, run=1, trigger=1, recLevel=1.0, preLevel = 0.0;
-	var record;
-	record = RecordBuf.ar(SoundIn.ar(input),
-		buffer,
-		recLevel: recLevel,
-		preLevel: preLevel,
-		loop: loop,
-		run: run,
-		trigger: trigger);
-}).add;
-
+// Granulator, buffer, pointer and input synthedefs
 // H/t Eli Fieldsteel!
 SynthDef.new(\inputRouter, {
+	// Routes one input bus to an output, also allows for amplitude control.
 	arg in=0, out=0, amp=1;
 	var sig;
 	sig = In.ar(in) * amp;
@@ -22,6 +11,7 @@ SynthDef.new(\inputRouter, {
 }).add;
 
 SynthDef.new(\pointer, {
+	// A pointer, written to a bus that 'trails' the realtime "head" of an audio bus.
 	arg out=0, buf=0;
 	var sig;
 	sig = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf));
@@ -29,6 +19,7 @@ SynthDef.new(\pointer, {
 }).add;
 
 SynthDef.new(\recordBuffer, {
+	// Records a signal into a buffer from the pointer's position.
 	arg ptrIn=0, recIn=0, buf=0;
 	var ptr, sig;
 	ptr = In.ar(ptrIn, 1);
@@ -37,6 +28,7 @@ SynthDef.new(\recordBuffer, {
 }).add;
 
 SynthDef.new(\granulatorSplitter, {
+	// A helper audio bus splitter to send one audio inout to two audio buses out.
 	arg in=10, out1=89, out2=99;
 	var input;
 	input = In.ar(in, 2);
@@ -44,6 +36,7 @@ SynthDef.new(\granulatorSplitter, {
 }).add;
 
 SynthDef.new(\granulatorSequencer, {
+	// Granulator for the sequencer.
 	arg amp=0.5, out=0, buf=0, attack=1, release=1, gate=1, sync=1, density=40, baseDur=0.05, durRand=1, rate=1, rateRand=1, pan=0, panRand=0, grainEnv=(-1), ptrBus=0, ptrSampleDelay=20000, ptrRandSamples=5000, minPtrDelay=1000;
 	var sig, env, densCtrl, durCtrl, rateCtrl, panCtrl, ptr, ptrRand, totalDelay, maxGrainDur, grain;
 
@@ -80,33 +73,37 @@ SynthDef.new(\granulatorSequencer, {
 }).add;
 
 SynthDef.new(\hpf, {
+	// 1ch Resonant highpass filter.
 	arg amp=1, input=99, output=0, freq, rq;
 	var hpf, sig, in;
 	in = In.ar(input);
-	hpf = RHPF.ar(in, freq, rq, mul: 1/rq.sqrt;);
+	hpf = RHPF.ar(in, freq, rq, mul: 1/rq.sqrt);
 	sig = hpf * amp;
 	Out.ar(output, sig);
 }).add;
 
 SynthDef.new(\lpf, {
-	arg amp=127, input=99, output=0, freq, rq;
-	var hpf, sig, in;
+	// 1ch Resonant lowpass filter
+	arg amp=1, input=99, output=0, freq, rq;
+	var lpf, sig, in;
 	in = In.ar(input);
-	hpf = RLPF.ar(in, freq, rq, mul: 1/rq.sqrt;);
-	sig = hpf * amp.linlin(0, 127, 0, 1);
+	lpf = RLPF.ar(in, freq, rq, mul: 1/rq.sqrt);
+	sig = lpf * amp;
 	Out.ar(output, sig);
 }).add;
 
 SynthDef.new(\lpf_2ch, {
-	arg amp=127, input=99, output=0, freq, rq;
+	// 2ch Resonant lowpass filter
+	arg amp=1, input=99, output=0, freq, rq;
 	var lpf, sig, in;
 	in = In.ar(input, 2);
 	lpf = RLPF.ar(in, freq, rq, mul: 1/rq.sqrt;);
-	sig = lpf * amp.linlin(0, 127, 0, 1);
+	sig = lpf * amp;
 	Out.ar(output, sig);
 }).add;
 
 SynthDef(\delay_1ch, {
+	// 1ch delay line with no feedback
 	arg delaytime=0.6, output=0, input=99, amp=0.2;
 	var in = In.ar(input, 1);
 	var effect = DelayN.ar(in, delaytime, delaytime, amp);
@@ -114,65 +111,33 @@ SynthDef(\delay_1ch, {
 }).add;
 
 SynthDef(\delay_2ch, {
+	// 2ch delay line with no feedback
 	arg delaytime=0.6, output=0, input=99, amp=0.2;
 	var in = In.ar(input, 2);
 	var effect = DelayN.ar(in, delaytime, delaytime, amp);
 	Out.ar(output, effect);
 }).add;
 
-SynthDef(\audio_router_2ch, {
-	arg amp, input=0, output=0;
-	var in;
-	in = In.ar(input, 2);
-	Out.ar(output, in);
-}).add;
-
-SynthDef.new(\ringModOctaver, {
-	// credit David Siah & Miller Puckette
-	arg amp, input=99, output=0, octave=0.5;
-	var in, freq, hasFreq, sig;
-	in = In.ar(input, 1);
-	# freq, hasFreq = Pitch.kr(in, median:7, execFreq: 1);
-	sig = SinOsc.ar(freq: freq * octave) * in + in;
-	Out.ar(output, sig * amp);
-}).add;
-
-SynthDef.new(\sin_tone, {
-	arg freq=440, amp=1, gate=0, bend=0;
-	var sig, env;
-	sig = SinOsc.ar(freq * bend.midiratio)!2;
-	env = EnvGen.kr(Env.adsr, gate, doneAction:2);
-	sig = sig * env * amp;
-	Out.ar(0, sig);
-}).add;
-
 SynthDef.new(\sin_tone_sequencer, {
-	arg freq=440, amp=1, bend=0, out=0, dur=1;
+	// a sine tone synth
+	arg freq=440, amp=1, bend=0, out=0, dur=1, gate=0;
 	var sig, env;
 	sig = SinOsc.ar(freq * bend.midiratio)!2;
-	env = EnvGen.kr(Env.perc(releaseTime: dur+0.5), doneAction:2);
+	env = EnvGen.kr(Env.adsr(attackTime: 0.01), gate: gate, doneAction:2);
 	sig = sig * env * amp;
 	Out.ar(out, sig);
 }).add;
 
 SynthDef(\peep_sequencer,{
-	arg freq=100, amp=0.5, out=0;
+	// a sine tone peep.
+	arg freq=100, amp=0.5, out=0, gate=0;
 	var snd = SinOsc.ar(freq);
-	snd = snd * EnvGen.ar(Env.perc(0.001,0.25), doneAction:2) * amp;
+	snd = snd * EnvGen.ar(Env.perc(0.001,0.25), gate: gate, doneAction:2) * amp;
 	Out.ar(out, snd ! 2);
 }).add;
 
-SynthDef.new(\buzzy_bram, {
-	arg amp=20, out=0, freq=440, gate=0, bend=0, rq=0.5;
-	var pan, sig, trigger, saw, lpf, env;
-	saw = LFSaw.ar(freq * bend.midiratio, mul:0.7)!2;
-	lpf = RLPF.ar(saw, 1000, rq, 1/rq.sqrt);
-	env = EnvGen.kr(Env.adsr, gate, doneAction:2) * 1.5;
-	sig = SinOsc.ar(freq * bend.midiratio) * amp * env * lpf;
-	Out.ar(out, sig);
-}).add;
-
-SynthDef.new(\subtract_noise_synth, {
+SynthDef.new(\subtract_noise_synth_sequencer, {
+	// A synth that generates windy-sounding pitches via subtractive synthesis
 	arg out=0, amp=1, freq=440, texture_speed=5, attack=0.1, texture_dur=0.4, trig=0, dur=15, rq=0.001, pos=0, gate=0;
 	var noise, rand_amp, filter, texture_trig, env, texture, pan;
 	env = EnvGen.kr(Env.adsr, gate, doneAction:2);
@@ -183,7 +148,8 @@ SynthDef.new(\subtract_noise_synth, {
 	Out.ar(out, pan);
 }).add;
 
-SynthDef(\sin_fb_synth, {
+SynthDef(\sin_fb_synth_sequencer, {
+	// Sin feedback synth
 	arg out, gate=0, freq=440, amp=2, feedback_start=0.5, feedback_peak=1.0, texture_dur=0.1;
 	var env, sig, lfo, sinfb, pan, feedback_env, texture_trig;
 	env = EnvGen.kr(Env.adsr, gate, doneAction:2);
@@ -195,46 +161,8 @@ SynthDef(\sin_fb_synth, {
 	Out.ar(out, pan);
 }).add;
 
-SynthDef(\phase_mod, {
-	arg amp, out=0, dur=15, attack=0.1, release=0.1, decay_time=0.1, decay_amp=0.7, freq=440, fmod_freq=533, fmod_mul=12, sustain_freq=660, pos=0, gate=0, filter_env_start_freq=880, filter_env_end_freq=440, filter_sus_dur=15, filter_decay_dur=0.1, filter_release_time=0.1, tail_length=4, tail_length_level=0.1, mRatio=1, cRatio=1;
-	var pan, sig, env, filter, carrier, modulator, fmod_env, filter_env;
-
-	// Control Envelopes
-	env = EnvGen.kr(
-		Env([0,1,decay_amp,1,0],
-			[attack, decay_time, dur-attack-release-decay_time-tail_length, tail_length],
-			curve: ['wel', -2.0, -3, 0, -4],
-			releaseNode: 3
-		),
-		gate: gate,
-		doneAction: Done.freeSelf);
-	fmod_env = EnvGen.kr(
-		Env([0,1,1,tail_length_level,tail_length_level, 0],
-			[attack, (dur/2)-attack-(tail_length/2)-0.1, tail_length, (dur/2)-(tail_length/2), 0.1],
-			curve: 'wel',
-			releaseNode: 2
-		),
-		gate: gate);
-	filter_env = EnvGen.kr(
-		Env([0.1, filter_env_start_freq, sustain_freq, sustain_freq, filter_env_end_freq],
-			[attack, filter_decay_dur, filter_sus_dur-attack-filter_decay_dur-release, filter_release_time],
-			curve: -3,
-			releaseNode: 2
-		),
-		gate: gate);
-
-	// Modulator and Carrier
-	modulator = SinOsc.ar(freq * mRatio, mul: fmod_mul) * fmod_env;
-	carrier = SinOsc.ar(freq * cRatio, modulator.wrap(0,4pi));
-
-	// Build signal
-	sig = carrier * env;
-	filter = LPF.ar(sig, filter_env);
-	pan = Pan2.ar(filter, pos: pos, level: amp * 1.1);
-	Out.ar(out, pan);
-}).add;
-
 SynthDef.new(\reverb, {
+	// 2 channel reverb
 	arg input=99, output=0, mix=0, room=0, damp=0, amp=1;
 	var in, sig;
 	in = In.ar(input, 2);
@@ -243,17 +171,19 @@ SynthDef.new(\reverb, {
 }).add;
 
 SynthDef.new(\buzzy_bram_sequencer, {
-	arg amp=20, out=0, freq=440, bend=0, rq=0.5, dur=1;
+	// Buzzy saw wave synth with a lpf to take the edge off and a sin wave to assert the fundamental
+	arg amp=1, out=0, freq=440, bend=0, rq=0.5, dur=1, gate=0;
 	var pan, sig, trigger, saw, lpf, env;
 	saw = LFSaw.ar(freq * bend.midiratio, mul:0.7)!2;
 	lpf = RLPF.ar(saw, 1000, rq, 1/rq.sqrt);
-	env = EnvGen.kr(Env.sine(dur+0.5), doneAction:2);
+	env = EnvGen.kr(Env.adsr, gate: gate, doneAction:2);
 	sig = SinOsc.ar(freq * bend.midiratio) * amp * env * lpf;
 	Out.ar(out, sig);
 }).add;
 
 SynthDef(\phase_mod_sequencer, {
-	arg amp, out=0, dur=3, attack=0.1, release=0.1, decay_time=0.1, decay_amp=0.7, freq=440, fmod_freq=533, fmod_mul=12, sustain_freq=660, pos=0, filter_env_start_freq=880, filter_env_end_freq=440, filter_sus_dur=1, filter_decay_dur=0.1, filter_release_time=0.1, tail_length=1, tail_length_level=0.1, mRatio=1, cRatio=1;
+	// A complicated phase mod instrument. Good for higher notes + very low notes. Souonds better with long tails as the instrument is designed to develop gracefully over long periods of time.
+	arg amp, out=0, dur=3, attack=0.1, release=0.1, decay_time=0.1, decay_amp=0.7, freq=440, fmod_freq=533, fmod_mul=12, sustain_freq=660, pos=0, filter_env_start_freq=880, filter_env_end_freq=440, filter_sus_dur=1, filter_decay_dur=0.1, filter_release_time=0.1, tail_length=1, tail_length_level=0.1, mRatio=1, cRatio=1, gate=0;
 	var pan, sig, env, filter, carrier, modulator, fmod_env, filter_env, lfo_amp;
 
 	// Control Envelopes
@@ -262,6 +192,7 @@ SynthDef(\phase_mod_sequencer, {
 			[attack, decay_time, dur-attack-release-decay_time-tail_length, tail_length],
 			curve: ['wel', -2.0, -3, 0, -4],
 		),
+		gate: gate,
 		doneAction: Done.freeSelf);
 	fmod_env = EnvGen.kr(
 		Env([0,1,1,tail_length_level,tail_length_level, 0],
