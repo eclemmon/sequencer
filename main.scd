@@ -9,20 +9,21 @@ var path;
 path = thisProcess.nowExecutingPath.dirname;
 path.postln;
 
-// Server.default.options.inDevice_("new_music_for_strings");
-/*Server.default.options.outDevice_("MacBook Pro Speakers");
-Server.default.options.inDevice_("MacBook Pro Microphone");*/
-// Server.default.options.inDevice_("Scarlett 2i2 USB");
-// Server.default.options.outDevice_("Scarlett 2i2 USB");
-Server.default.options.outDevice_("Screen Recording");
+// Set hardware in device
+Server.default.options.inDevice_("Scarlett 2i2 USB");
+// Set hardware out device
+Server.default.options.outDevice_("Scarlett 2i2 USB");
+
+// Set gloabal settings for scsynth server, assign server to a global var.
 ~server = Server.default;
 ~server.options.numOutputBusChannels_(2);
 ~server.options.numInputBusChannels_(4);
 ~server.waitForBoot(
 	{
-		// Set Global Monitor and Input
+		// Set gobal channel monitor
 		~monitor = [0,1];
-		// ~input = [2,3];
+
+		// Set global input channel array
 		~input = [0,1];
 
 		// LOAD SYNTH DEFS
@@ -37,15 +38,14 @@ Server.default.options.outDevice_("Screen Recording");
 		// LOAD GRANULATOR FUNCTIONS
 		thisProcess.interpreter.executeFile(path +/+ "/GUI_files/granulator_functions.scd");
 
+		// Wait until boot is done and then begin launching the rest of the prograam
 		~server.sync;
+
 		// Set global memory storage
 		~gm = Dictionary.new();
 
 		// Boot Sequencer
 		thisProcess.interpreter.executeFile(path +/+ "/GUI_files/sequencer_gui.scd");
-
-
-
 	};
 );
 )
