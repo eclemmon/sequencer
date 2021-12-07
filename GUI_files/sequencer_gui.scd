@@ -2,9 +2,13 @@
 (
 var buttonsize=40, columns=16, rows=8, window, top_level, track_buttons_container, ctrl_panel_container, header, buttons, track, sequencer_tab_buttons, stacked_buttons, sequencer_ctrl_1, sequencer_ctrl_2, sequencer_ctrl_3, start_instrument=\default, pattern, instruments=[\default, \peep_sequencer, \sin_tone_sequencer, \buzzy_bram_sequencer, \phase_mod_sequencer], memory=~gm, tab_names=['melody', 'harmony', 'bass'];
 
-// Initialize Memory
+// #############################
+// Initialize Base Memory Values
+// #############################
+
 memory.atFail(\seq_mem, {
 	memory.put(\seq_mem, Dictionary.newFrom([
+		// Some pattern data for start up.
 		\currentOctave, 0,
 		\melody_octave, 6,
 		\harmony_octave, 4,
@@ -24,9 +28,10 @@ memory.atFail(\seq_mem, {
 		\bass_amp, 0.7,
 		\pattern_out, 79,
 		\current_name, \melody,
+		// Booleans for routing
 		\reverb_on, false,
-		// Granulator Data
 		\granulator_on, false,
+		// Granulator data for start up.
 		\granAmp, 0.5,
 		\granOut, 0,
 		\granAttack, 0.1,
@@ -47,12 +52,18 @@ memory.atFail(\seq_mem, {
 	]));
 });
 
+// ##################################
+// Create objects for sound synthesis
+// ##################################
+
 // Create a buffer
 memory.at(\seq_mem).put(\buffer, Buffer.alloc(~server, ~server.sampleRate * columns * memory.at(\seq_mem).at(\delta), 1));
 
+// Initialize input and pointer buses for granulator control.
 memory.at(\seq_mem).put(\inputBus, Bus.audio(~server, 1));
 memory.at(\seq_mem).put(\ptrBus, Bus.audio(~server, 1));
 
+// Initialize groups to organize order of execution on the scsynth side.
 memory.at(\seq_mem).put(\inputGroup, Group.new);
 memory.at(\seq_mem).put(\ptrGroup, Group.after(memory.at(\seq_mem).at(\inputGroup)));
 memory.at(\seq_mem).put(\recGroup, Group.after(memory.at(\seq_mem).at(\ptrGroup)));
@@ -64,10 +75,15 @@ memory.at(\seq_mem).put(\reverb, Synth(\reverb, [\input, 99, \output, 0, \mix, 0
 // Initialize pattern splitter
 memory.at(\seq_mem).put(\granulatorSplitter, Synth(\granulatorSplitter, [\out1, 89, \out2, 0, \in, 79]));
 
+// Initialize a router for buffer recording.
 memory.at(\seq_mem).put(\sequencerInput, Synth(\inputRouter, [\in, 89, \out, memory.at(\seq_mem).at(\inputBus)], memory.at(\seq_mem).at(\inputGroup)));
+
+// Set a pointer synth to trail the record 'playhead'
 memory.at(\seq_mem).put(\pointer, Synth(\pointer,
 	[\buf, memory.at(\seq_mem).at(\buffer),
 		\out, memory.at(\seq_mem).at(\ptrBus)], memory.at(\seq_mem).at(\ptrGroup)));
+
+// Start a buffer recording synth
 memory.at(\seq_mem).put(\sequencerRecord,
 	Synth(\recordBuffer, [
 		\ptrIn, memory.at(\seq_mem).at(\ptrBus),
@@ -76,7 +92,10 @@ memory.at(\seq_mem).put(\sequencerRecord,
 	], memory.at(\seq_mem).at(\recGroup))
 );
 
-// Build GUI
+// #########
+// BUILD GUI
+// #########
+
 // Build window, top_level and header
 window = ~build_window.value("Sequencer", ~style_1, buttonsize*columns+740, buttonsize*rows+380);
 top_level = ~build_top_level.value(window, buttonsize*columns+720, buttonsize*rows+360, ~style_1);
@@ -89,6 +108,7 @@ sequencer_tab_buttons = ~build_sequencer_tab_buttons.value(top_level, \stack, ta
 track_buttons_container = ~build_track_buttons_container.value(top_level, buttonsize*columns+40, (buttonsize) + (buttonsize*rows+20), ~style_1);
 track = ~build_sequencer_track.value(track_buttons_container, buttonsize*columns+20, buttonsize+20, ~style_1, columns, buttonsize);
 
+// Build the Sequencer Buttons
 stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, sequencer_tab_buttons, buttonsize*columns+20, buttonsize*rows+20, 3, buttonsize, columns, rows, ~style_1, memory);
 
 // Built Control panels
@@ -96,6 +116,10 @@ ctrl_panel_container = ~build_track_buttons_container.value(top_level, 225+190+2
 sequencer_ctrl_1 = ~build_sequencer_control_panel_1.value(ctrl_panel_container, 225, buttonsize*rows+170, ~style_1, instruments, stacked_buttons, memory, columns);
 sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 190, buttonsize*rows+170, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb), track);
 sequencer_ctrl_3 = ~build_sequencer_control_panel_3.value(ctrl_panel_container, 200, buttonsize*rows+170, columns, ~style_1, memory, memory.at(\seq_mem).at(\granulatorSequencer));
+
+// ##############
+// Build Patterns
+// ##############
 
 Pdefn(\melody, Ppar(
 	stacked_buttons[0][1].collect({

@@ -24,5 +24,3 @@
 	"text_color", Color.fromHexString("#6F6866")
 ]);
 )
-
-// ~style_1.at("header_font").postln;
