@@ -1,6 +1,6 @@
 //// GUI CONSTRUCTOR
 (
-~build_window = {
+~build_window_seq = {
 	// Builds the main window that contains everything
 	arg window_title, style, width, height;
 	Window(window_title, Rect(10, 10, width, height))
@@ -8,7 +8,7 @@
 	.front;
 };
 
-~build_top_level = {
+~build_top_level_seq = {
 	// Buildts a top level composite view that manages child views' spacing.
 	arg window, width, height, style;
 	var compView = CompositeView(window, Rect(10, 10, width, height))
@@ -18,7 +18,7 @@
 	compView;
 };
 
-~build_sequencer_header = {
+~build_sequencer_header_seq = {
 	// Builds a header frame with a static text box with the title of the window
 	arg top, hwidth, hheight, style, string;
 	var guiTitle;
@@ -31,7 +31,7 @@
 	guiTitle;
 };
 
-~build_sequencer_tab_buttons = {
+~build_sequencer_tab_buttons_seq = {
 	// Builds the tab buttons that select different levels of sequencers.
 	arg top_level, stack, buttons;
 	buttons = buttons.collect({ arg item;
@@ -63,7 +63,7 @@
 	buttons;
 };
 
-~build_sequencer_tabbed_stack = {
+~build_sequencer_tabbed_stack_seq = {
 	// Builds n stacks of columns * rows buttons that control different sequencer levels.
 	arg top_level, sequencer_tab_buttons, width, height, num_tab_buttons, buttonsize, columns, rows, style, memory;
 	var view, stack, buttonsStacked, compViews;
@@ -73,7 +73,7 @@
 	view.background = style.at("bank_frame_color");
 
 	// Builds an array of sequencer buttons (themselves a 2DArray).
-	buttonsStacked = Array.fill(num_tab_buttons, {arg i; ~build_sequencer_buttons.value(view, buttonsize*columns, buttonsize*rows, style, columns, rows, buttonsize)});
+	buttonsStacked = Array.fill(num_tab_buttons, {arg i; ~build_sequencer_buttons_seq.value(view, buttonsize*columns, buttonsize*rows, style, columns, rows, buttonsize)});
 
 	// The individual composite views that the buttons will be placed.
 	compViews = Array.fill(num_tab_buttons, {arg i; buttonsStacked[i][0]});
@@ -112,7 +112,7 @@
 	buttonsStacked;
 };
 
-~build_track_buttons_container = {
+~build_track_buttons_container_seq = {
 	// Builds a frame to contain and organize the track and the stack of buttons.
 	arg top_level, width, height, style;
 	var compView = CompositeView(top_level, Rect(0, 0, width, height))
@@ -122,7 +122,7 @@
 	compView;
 };
 
-~build_sequencer_track = {
+~build_sequencer_track_seq = {
 	// Builds the sequencer track.
 	arg top, hwidth, hheight, style, columns, buttonsize;
 	var trackCompView, array, sequencer_track_data;
@@ -143,7 +143,7 @@
 	sequencer_track_data = [trackCompView, array]
 };
 
-~build_sequencer_buttons = {
+~build_sequencer_buttons_seq = {
 	// A function to build a 2D array of buttons that turn on and off the notes
 	// selected in the sequencer pattern.
 	arg top, hwidth, hheight, style, columns, rows, buttonsize;
@@ -174,7 +174,7 @@
 };
 
 
-~build_sequencer_control_panel_1 = {
+~build_sequencer_control_panel_1_seq = {
 	// Builds the control panel 1 for the sequencer
 	arg top, hwidth, hheight, style, instruments=[\default], butCompViews, memory, columns;
 	var compView, speedSliderLabel, volumeSliderLabel, speedSlider, volumeSlider, speedNumberBox, volumeNumberBox, scaleMenuLabel, scaleMenu, instrumentLabel, instrumentMenu, clearButton, durationSliderLabel, noteDurationSlider, noteDurationBox;
@@ -250,7 +250,7 @@
 	noteDurationSlider.action_({
 		var control, control_name, pdef_name;
 		control = ControlSpec(0.1, 4, \linear, 0.1);
-		control_name = ~build_control_name.value(memory, \sus);
+		control_name = ~build_control_name_seq.value(memory, \sus);
 		pdef_name = \p_ ++ control_name;
 		memory.at(\seq_mem).put(control_name, noteDurationSlider.value);
 		Pdefn(pdef_name.asSymbol, control.map(memory.at(\seq_mem).at(control_name)));
@@ -264,7 +264,7 @@
 	volumeSlider.action_({
 		var control, control_name, pdef_name;
 		control = ControlSpec(0, 0.7, \linear, 0.01);
-		control_name = ~build_control_name.value(memory, \amp);
+		control_name = ~build_control_name_seq.value(memory, \amp);
 		pdef_name = \p_ ++ control_name;
 		memory.at(\seq_mem).put(control_name, volumeSlider.value);
 		Pdefn(pdef_name.asSymbol, control.map(memory.at(\seq_mem).at(control_name)));
@@ -314,7 +314,7 @@
 	instrumentMenu.action_({
 		arg menu;
 		var control_name, pdef_name;
-		control_name = ~build_control_name.value(memory, \instrument);
+		control_name = ~build_control_name_seq.value(memory, \instrument);
 		pdef_name = \p_ ++ control_name;
 		memory.at(\seq_mem).put(control_name, menu.item);
 		memory.at(\seq_mem).put(control_name ++ '_idx', menu.value);
@@ -343,17 +343,10 @@
 	compView;
 };
 
-~build_sequencer_control_panel_2 = {
+~build_sequencer_control_panel_2_seq = {
 	// Builds the control panel 2 for the sequencer
 	arg top, hwidth, hheight, style, buttonsize, memory, stacked_buttons, reverb, track;
-	var control2CompView, octaveLabel, minusOctBut, plusOctBut, quantLabel, quantSlider, quantNumberBox, mixKnob, roomKnob, dampKnob, reverbButton, outDevices, inDevices, inDevicesSelector, outDevicesSelector, outDevice, inDevice, inDevicesSelectorText, outDevicesSelectorText;
-
-	// Server options
-	outDevices = ["Default"] ++ ServerOptions.outDevices;
-	inDevices = ["Default"] ++ ServerOptions.inDevices;
-	outDevice = "Default";
-	inDevice = "Default";
-
+	var control2CompView, octaveLabel, minusOctBut, plusOctBut, quantLabel, quantSlider, quantNumberBox, mixKnob, roomKnob, dampKnob, reverbButton, sequencerOutMonitor;
 
 	// Control Comp View 2
 	control2CompView = CompositeView(top, Rect(0, 0, hwidth, hheight));
@@ -381,7 +374,7 @@
 	// Octave Button Actions
 	minusOctBut.action_({
 		var cn_octave, pdef_name;
-		cn_octave = ~build_control_name.value(memory, \octave);
+		cn_octave = ~build_control_name_seq.value(memory, \octave);
 		pdef_name = \p_ ++ cn_octave;
 		memory.at(\seq_mem).put(cn_octave, memory.at(\seq_mem).at(cn_octave) - 1);
 		Pdefn(pdef_name.asSymbol, memory.at(\seq_mem).at(cn_octave.asSymbol))
@@ -389,7 +382,7 @@
 
 	plusOctBut.action_({
 		var cn_octave, pdef_name;
-		cn_octave = ~build_control_name.value(memory, \octave);
+		cn_octave = ~build_control_name_seq.value(memory, \octave);
 		pdef_name = \p_ ++ cn_octave;
 		memory.at(\seq_mem).put(cn_octave, memory.at(\seq_mem).at(cn_octave) + 1);
 		Pdefn(pdef_name.asSymbol, memory.at(\seq_mem).at(cn_octave.asSymbol))
@@ -432,11 +425,13 @@
 		if (reverbButton.value == 1, {
 			// Set Granulator Splitter out2 to 99
 			// Set granulator out to reverb
+			memory.at(\seq_mem).at(\reverb).set(\gate, 1);
 			memory.at(\seq_mem).put(\reverb_on, true);
 			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 99);
 			memory.at(\seq_mem).at(\granulatorSequencer).set(\out, 99);
 		}, {
 			// Set splitter and granulator out to main
+			memory.at(\seq_mem).at(\reverb).set(\gate, 0);
 			memory.at(\seq_mem).at(\granulatorSplitter).set(\out2, 0);
 			memory.at(\seq_mem).at(\granulatorSequencer).set(\out, 0);
 			memory.at(\seq_mem).put(\reverb_on, false);
@@ -476,40 +471,28 @@
 		reverb.set(\damp, dampKnob.value);
 	});
 
-	// In and Out Selectors
-	// Probably will be depreciated or moved to a boot gui that sets the options
-	// for users in an easier manner. Currently do nothing unless the
-	// user stops the scsynth server and boots it again.
-	inDevicesSelectorText = StaticText(control2CompView, 170/3@30)
-	.string_("In")
-	.stringColor_(Color.white)
-	.background_(style.at("window_color"))
-	.align_(\center);
+	control2CompView.decorator.nextLine;
 
-	inDevicesSelector = PopUpMenu(control2CompView, (170/3*2-10)@30)
-	.items_(inDevices)
-	.action_({arg deviceName;
-		deviceName.item.postln;
-		Server.default.options.inDevice = deviceName.item;
+	["Seq Lvl", "Gran Lvl"].do({
+		arg item, i;
+		var label;
+		label = StaticText(control2CompView, Rect(0, 0, 170-20/3, 30))
+		.string_(item)
+		.font_(style.at("text_font"))
+		.align_(\center);
+		label.background = style.at("bank_frame_color");
 	});
 
-	outDevicesSelectorText = StaticText(control2CompView, 170/3@30)
-	.string_("Out")
-	.stringColor_(Color.white)
-	.background_(style.at("window_color"))
-	.align_(\center);
+	control2CompView.decorator.nextLine;
 
-	outDevicesSelector = PopUpMenu(control2CompView, (170/3*2-10)@30)
-	.items_(outDevices)
-	.action_({arg deviceName;
-		deviceName.item.postln;
-		Server.default.options.outDevice = deviceName.item;
-	});
+	sequencerOutMonitor = ~build_level_indicator.value(memory.at(\seq_mem).at(\pattern_out), control2CompView, 170-20/3, 110);
+
+	sequencerOutMonitor = ~build_level_indicator.value(memory.at(\seq_mem).at(\granOut), control2CompView, 170-20/3, 110);
 
 	control2CompView;
 };
 
-~build_sequencer_control_panel_3 = {
+~build_sequencer_control_panel_3_seq = {
 	// Builds the control panel 3 for the sequencer
 	arg top, hwidth, hheight, columns, style, memory, granulator;
 	var control3CompView, granulatorLabel, granulatorOnButton, ampKnob, grainDensityKnob, grainBaseDurKnob, durRandKnob, grainRateKnob, grainRateRandKnob, grainPanKnob, grainPanRandKnob, grainPtrDelayKnob, grainPtrDelayRandKnob, grainMinPtrDelayKnob, blackHoleSeqButton;
@@ -714,7 +697,7 @@
 	grainMinPtrDelayKnob.action_({
 		var control;
 		control = ControlSpec(1, ~server.sampleRate * columns * memory.at(\seq_mem).at(\delta), \linear, 0.01);
-		~set_granulator_minimum_pointer_delay.value(memory, control.map(grainPanRandKnob.value));
+		~set_granulator_minimum_pointer_delay.value(memory, control.map(grainMinPtrDelayKnob.value));
 	});
 
 	// Black Hole Button. Sends the sequencers out to nowhere (but leaves it running for the
@@ -738,7 +721,7 @@
 	control3CompView;
 };
 
-~update_track = {
+~update_track_seq = {
 	// Updates the track, giving one of the StaticText objects a random color and turning
 	// off the previous index.
 	arg index, track;
@@ -751,7 +734,7 @@
 	});
 };
 
-~build_control_name = {
+~build_control_name_seq = {
 	// A helper function that builds a control name according to the name defined.
 	arg memory, name;
 	var str;
@@ -759,14 +742,51 @@
 	str.asSymbol;
 };
 
-~set_buttons_sliders_numBoxes = {
+~set_buttons_sliders_numBoxes_seq = {
 	// Function that sets specific sliders/buttons/menus that should update when the
 	// tab button changes.
 	arg memory;
 	var control_name;
-	memory.at(\seq_mem).at(\noteDurationSlider).value = memory.at(\seq_mem).at(~build_control_name.value(memory, \sus));
-	memory.at(\seq_mem).at(\volumeSlider).value = memory.at(\seq_mem).at(~build_control_name.value(memory, \amp));
-	memory.at(\seq_mem).at(\instrumentMenu).value = memory.at(\seq_mem).at(~build_control_name.value(memory, \instrument) ++ '_idx');
+	memory.at(\seq_mem).at(\noteDurationSlider).value = memory.at(\seq_mem).at(~build_control_name_seq.value(memory, \sus));
+	memory.at(\seq_mem).at(\volumeSlider).value = memory.at(\seq_mem).at(~build_control_name_seq.value(memory, \amp));
+	memory.at(\seq_mem).at(\instrumentMenu).value = memory.at(\seq_mem).at(~build_control_name_seq.value(memory, \instrument) ++ '_idx');
+};
+
+~build_level_indicator = {
+	arg input, container, width, height;
+	var bus, indicator, updateIndicator, soundSynth, val;
+
+	container.onClose_({   // stop routine when the window is closed
+		updateIndicator.stop;
+		updateIndicator.free
+	});
+
+	bus = Bus.control();
+	bus.postln;
+	soundSynth = Synth(\levelIndicator_1ch, [\input, input, \bus, bus], addAction: 'addToTail');
+
+	indicator = LevelIndicator(container, Rect(0,0,width,height))
+	.warning_(0.5)           // set warning level
+	.critical_(0.7)          // set critical level
+	.background_(Color.white) // set Color
+	.drawsPeak_(true)
+	.style_('\led')
+	.stepWidth_(3);       // draw Peak Values
+
+	// update the Indicator's value with a routine
+	updateIndicator = fork{
+		loop{
+			bus.get({   // get current value from the bus
+				arg value;
+				{
+					indicator.value_(value);     // set Indicator's value
+					indicator.peakLevel_(value); // set Indicator's peak value
+				}.defer(); // schedule in the AppClock
+			});
+			0.01.wait; // indicator will be updated every 0.01 seconds
+		}
+	};
+
 };
 
 )

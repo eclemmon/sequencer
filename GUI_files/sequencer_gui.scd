@@ -23,9 +23,9 @@ memory.atFail(\seq_mem, {
 		\melody_sus, 0.1,
 		\harmony_sus, 0.1,
 		\bass_sus, 0.1,
-		\melody_amp, 0.7,
-		\harmony_amp, 0.7,
-		\bass_amp, 0.7,
+		\melody_amp, 0.5,
+		\harmony_amp, 0.5,
+		\bass_amp, 0.5,
 		\pattern_out, 79,
 		\current_name, \melody,
 		// Booleans for routing
@@ -97,25 +97,25 @@ memory.at(\seq_mem).put(\sequencerRecord,
 // #########
 
 // Build window, top_level and header
-window = ~build_window.value("Sequencer", ~style_1, buttonsize*columns+740, buttonsize*rows+380);
-top_level = ~build_top_level.value(window, buttonsize*columns+720, buttonsize*rows+360, ~style_1);
-header = ~build_sequencer_header.value(top_level, buttonsize*columns+700, 80, ~style_1, "Sequencer");
+window = ~build_window_seq.value("Sequencer", ~style_1, buttonsize*columns+740, buttonsize*rows+380);
+top_level = ~build_top_level_seq.value(window, buttonsize*columns+720, buttonsize*rows+360, ~style_1);
+header = ~build_sequencer_header_seq.value(top_level, buttonsize*columns+700, 80, ~style_1, "Sequencer");
 
 // Build Tabs
-sequencer_tab_buttons = ~build_sequencer_tab_buttons.value(top_level, \stack, tab_names);
+sequencer_tab_buttons = ~build_sequencer_tab_buttons_seq.value(top_level, \stack, tab_names);
 
 // Build Track
-track_buttons_container = ~build_track_buttons_container.value(top_level, buttonsize*columns+40, (buttonsize) + (buttonsize*rows+20), ~style_1);
-track = ~build_sequencer_track.value(track_buttons_container, buttonsize*columns+20, buttonsize+20, ~style_1, columns, buttonsize);
+track_buttons_container = ~build_track_buttons_container_seq.value(top_level, buttonsize*columns+40, (buttonsize) + (buttonsize*rows+20), ~style_1);
+track = ~build_sequencer_track_seq.value(track_buttons_container, buttonsize*columns+20, buttonsize+20, ~style_1, columns, buttonsize);
 
 // Build the Sequencer Buttons
-stacked_buttons = ~build_sequencer_tabbed_stack.value(track_buttons_container, sequencer_tab_buttons, buttonsize*columns+20, buttonsize*rows+20, 3, buttonsize, columns, rows, ~style_1, memory);
+stacked_buttons = ~build_sequencer_tabbed_stack_seq.value(track_buttons_container, sequencer_tab_buttons, buttonsize*columns+20, buttonsize*rows+20, 3, buttonsize, columns, rows, ~style_1, memory);
 
 // Built Control panels
-ctrl_panel_container = ~build_track_buttons_container.value(top_level, 225+190+200, buttonsize*rows+170, ~style_1);
-sequencer_ctrl_1 = ~build_sequencer_control_panel_1.value(ctrl_panel_container, 225, buttonsize*rows+170, ~style_1, instruments, stacked_buttons, memory, columns);
-sequencer_ctrl_2 = ~build_sequencer_control_panel_2.value(ctrl_panel_container, 190, buttonsize*rows+170, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb), track);
-sequencer_ctrl_3 = ~build_sequencer_control_panel_3.value(ctrl_panel_container, 200, buttonsize*rows+170, columns, ~style_1, memory, memory.at(\seq_mem).at(\granulatorSequencer));
+ctrl_panel_container = ~build_track_buttons_container_seq.value(top_level, 225+190+200, buttonsize*rows+170, ~style_1);
+sequencer_ctrl_1 = ~build_sequencer_control_panel_1_seq.value(ctrl_panel_container, 225, buttonsize*rows+170, ~style_1, instruments, stacked_buttons, memory, columns);
+sequencer_ctrl_2 = ~build_sequencer_control_panel_2_seq.value(ctrl_panel_container, 190, buttonsize*rows+170, ~style_1, buttonsize, memory, stacked_buttons, memory.at(\seq_mem).at(\reverb), track);
+sequencer_ctrl_3 = ~build_sequencer_control_panel_3_seq.value(ctrl_panel_container, 200, buttonsize*rows+170, columns, ~style_1, memory, memory.at(\seq_mem).at(\granulatorSequencer));
 
 // ##############
 // Build Patterns
@@ -135,7 +135,7 @@ Pdefn(\melody, Ppar(
 			\amp, Pdefn(\p_melody_amp, memory.at(\seq_mem).at(\melody_amp)),
 			\out, Pdefn(\p_out, memory.at(\seq_mem).at(\pattern_out)),
 			\track_index, Pdefn(\p_track_index, Pseq((0..15), inf)),
-			\track_func, Pdefn(\p_track_func, Pfunc({|ev| ~update_track.value(ev.track_index, track)}));
+			\track_func, Pdefn(\p_track_func, Pfunc({|ev| ~update_track_seq.value(ev.track_index, track)}));
 )}), inf)).play;
 
 Pdefn(\harmony, Ppar(

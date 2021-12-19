@@ -10,21 +10,22 @@ path = thisProcess.nowExecutingPath.dirname;
 path.postln;
 
 // Set hardware in device
-Server.default.options.inDevice_("Scarlett 2i2 USB");
+// Server.default.options.inDevice_("Scarlett 2i2 USB");
+Server.default.options.inDevice_("Scarlett 18i8 USB");
 // Set hardware out device
-Server.default.options.outDevice_("Scarlett 2i2 USB");
+Server.default.options.outDevice_("Scarlett 18i8 USB");
 
 // Set gloabal settings for scsynth server, assign server to a global var.
 ~server = Server.default;
-~server.options.numOutputBusChannels_(2);
-~server.options.numInputBusChannels_(4);
+/*~server.options.numOutputBusChannels_(8);
+~server.options.numInputBusChannels_(8);*/
 ~server.waitForBoot(
 	{
-		// Set gobal channel monitor
+/*		// Set gobal channel monitor
 		~monitor = [0,1];
 
 		// Set global input channel array
-		~input = [0,1];
+		~input = [0,1];*/
 
 		// LOAD SYNTH DEFS
 		thisProcess.interpreter.executeFile(path +/+ "/synthdefs.scd");
@@ -42,7 +43,9 @@ Server.default.options.outDevice_("Scarlett 2i2 USB");
 		~server.sync;
 
 		// Set global memory storage
-		~gm = Dictionary.new();
+		if (~gm == nil, {
+			~gm = Dictionary.new();
+		});
 
 		// Boot Sequencer
 		thisProcess.interpreter.executeFile(path +/+ "/GUI_files/sequencer_gui.scd");
